@@ -441,6 +441,81 @@ body {
 }
 .athlete-chip-remove:hover { color: #f87171; }
 
+/* ─── RACE PICKER ───────────────────────────────────────────────────── */
+.race-picker-panel {
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.race-picker-panel.hidden { display: none; }
+.race-picker-head {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.race-picker-head span { color: var(--muted); font-weight: 400; }
+.race-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+.race-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .78rem;
+  color: var(--text);
+  padding: 3px 0;
+  cursor: pointer;
+  user-select: none;
+}
+.race-picker-item input[type=checkbox] { accent-color: #3b82f6; cursor: pointer; flex-shrink: 0; }
+.race-picker-item.already { opacity: .4; pointer-events: none; }
+.race-picker-item.already label::after { content: ' — already imported'; color: var(--muted); font-size: .7rem; }
+.race-picker-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.race-picker-import-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.race-picker-import-btn:hover { background: #2563eb; }
+.race-picker-import-btn:disabled { opacity: .5; cursor: default; }
+.race-picker-cancel-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: .78rem;
+  cursor: pointer;
+  padding: 6px 4px;
+  transition: color .15s;
+}
+.race-picker-cancel-btn:hover { color: var(--text); }
+.race-picker-select-all {
+  font-size: .7rem;
+  color: #60a5fa;
+  cursor: pointer;
+  margin-left: auto;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
 /* ─── HEADER ────────────────────────────────────────────────────────────── */
 header {
   background: linear-gradient(160deg, #0f1a2e 0%, #091424 100%);

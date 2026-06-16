@@ -164,7 +164,7 @@ async function addTrackedAthlete() {
   const input  = document.getElementById('athleteInput');
   const status = document.getElementById('athleteSearchStatus');
   const btn    = document.getElementById('athleteAddBtn');
-  const query  = input.value.trim().slice(0, 120); // cap length
+  const query  = input.value.trim().slice(0, 120);
   if (!query) return;
 
   btn.disabled = true;
@@ -189,11 +189,90 @@ async function addTrackedAthlete() {
     return;
   }
 
-  athleteStore.add(result.slug, result.name);
-  input.value = '';
+  // Step 2: show race picker
   status.className = 'athlete-search-status success';
-  status.textContent = `✓ Added ${result.name} — sync will pick up their races on next load.`;
-  buildAthleteList();
+  status.textContent = `Found: ${result.name} — pick races to import`;
+  input.value = '';
+  showRacePicker(result.slug, result.name, result.races);
+}
+
+function showRacePicker(slug, name, races) {
+  const panel = document.getElementById('racePickerPanel');
+  if (!panel) return;
+
+  const alreadyHave = new Set(RACES.map(r => r.resultId));
+  const newRaces = races.filter(r => !alreadyHave.has(r.resultId));
+  const existingRaces = races.filter(r => alreadyHave.has(r.resultId));
+
+  panel.innerHTML = `
+    <div class="race-picker-head">
+      ${name} <span>· ${races.length} race${races.length !== 1 ? 's' : ''} found</span>
+    </div>
+    <div class="race-picker-list">
+      ${newRaces.map(r => `
+        <label class="race-picker-item">
+          <input type="checkbox" value="${r.resultId}" data-text="${r.text.replace(/"/g,'&quot;')}" checked>
+          ${r.text || r.resultId}
+        </label>`).join('')}
+      ${existingRaces.map(r => `
+        <label class="race-picker-item already">
+          <input type="checkbox" value="${r.resultId}" disabled>
+          ${r.text || r.resultId}
+        </label>`).join('')}
+    </div>
+    <div class="race-picker-actions">
+      <button class="race-picker-import-btn" id="racePickerImport">Import selected</button>
+      <button class="race-picker-cancel-btn" id="racePickerCancel">Cancel</button>
+      <button class="race-picker-select-all" id="racePickerSelectAll">select all / none</button>
+    </div>
+  `;
+  panel.classList.remove('hidden');
+
+  // toggle all
+  let allSelected = true;
+  panel.querySelector('#racePickerSelectAll').addEventListener('click', () => {
+    allSelected = !allSelected;
+    panel.querySelectorAll('.race-picker-list input:not([disabled])').forEach(cb => cb.checked = allSelected);
+  });
+
+  panel.querySelector('#racePickerCancel').addEventListener('click', () => {
+    panel.classList.add('hidden');
+    panel.innerHTML = '';
+    document.getElementById('athleteSearchStatus').textContent = '';
+  });
+
+  panel.querySelector('#racePickerImport').addEventListener('click', async () => {
+    const checked = [...panel.querySelectorAll('.race-picker-list input:checked')];
+    if (!checked.length) return;
+
+    const importBtn = panel.querySelector('#racePickerImport');
+    importBtn.disabled = true;
+    importBtn.textContent = 'Importing…';
+
+    const status = document.getElementById('athleteSearchStatus');
+
+    // Add athlete to store first
+    athleteStore.add(slug, name);
+
+    let added = 0, failed = 0;
+    for (const cb of checked) {
+      status.textContent = `Importing ${added + failed + 1} / ${checked.length}…`;
+      const res = await importRaceById(cb.value, slug, cb.dataset.text || cb.value);
+      if (res.status === 'added') added++;
+      else if (res.status === 'error') failed++;
+    }
+
+    panel.classList.add('hidden');
+    panel.innerHTML = '';
+
+    status.className = failed ? 'athlete-search-status' : 'athlete-search-status success';
+    status.textContent = added
+      ? `✓ Imported ${added} race${added !== 1 ? 's' : ''} for ${name}${failed ? ` (⚠ ${failed} failed)` : ''}`
+      : `⚠ Could not import races — CORS proxy blocked. Try again later.`;
+
+    buildAthleteList();
+    if (added) { rebuildAllCharts(); initTableRows(); refreshTable(); buildHeader(); }
+  });
 }
 
 function initAthleteSearch() {

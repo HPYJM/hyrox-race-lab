@@ -250,10 +250,52 @@ async function lookupAthlete(query) {
   const h1 = doc.querySelector('h1');
   const name = h1?.textContent?.trim() || query;
 
-  // Verify it's a real athlete page
-  if (!doc.querySelector('a[href*="/result/"]') && !html.includes('/result/')) return null;
+  // Verify it's a real athlete page and collect race list
+  const races = parseAthletePage(html);
+  if (!races.length) return null;
 
-  return { slug, name };
+  return { slug, name, races };
+}
+
+// ─── IMPORT A SINGLE RACE BY RESULT ID ──────────────────────────────────────────
+async function importRaceById(resultId, athleteSlug, labelHint) {
+  if (store.has(resultId)) return { status: 'exists' };
+  const splitsUrl = `https://www.hyresult.com/result/${resultId}?tab=splits`;
+  const splitsHtml = await proxyFetch(splitsUrl);
+  if (!splitsHtml) return { status: 'error', msg: `Could not fetch ${resultId}` };
+  const splits = parseSplitsFromHtml(splitsHtml);
+  if (!splits) return { status: 'error', msg: `Could not parse splits for ${resultId}` };
+  const meta = parseResultMeta(splitsHtml, athleteSlug);
+  const existingIds = new Set(RACES.map(r => r.id));
+  const id = makeShortId(meta.label || labelHint, meta.category, existingIds);
+  const race = {
+    resultId, id,
+    label:        meta.label || labelHint,
+    athlete:      meta.athlete,
+    athleteSlug:  athleteSlug,
+    partner:      meta.partner,
+    partnerSlug:  meta.partnerSlug,
+    category:     meta.category,
+    division:     meta.division,
+    ageGroup:     meta.ageGroup,
+    rank:         meta.rank,
+    ag:           meta.ag,
+    pct:          '',
+    color:        null,
+    total:        meta.total,
+    totalSecs:    splits.totalSecs || meta.totalSecs,
+    runsSecs:     splits.runsSecs,
+    workoutsSecs: splits.workoutsSecs,
+    roxzoneSecs:  splits.roxzoneSecs,
+    runs:         splits.runs,
+    workouts:     splits.workouts,
+    rxEntry:      splits.rxEntry,
+    rxExit:       splits.rxExit,
+    radarStrength: null
+  };
+  const added = store.add(race);
+  if (added) store.mergeIntoRaces();
+  return { status: added ? 'added' : 'exists', race };
 }
 
 // ─── MAIN SYNC ───────────────────────────────────────────────────────────────
