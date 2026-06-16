@@ -1,4 +1,4 @@
-// AUTO-GENERATED 2026-06-16T14:33:43.309Z
+// AUTO-GENERATED 2026-06-16T14:44:38.147Z
 
 const HYROX_S7_EVENTS=[];
 
@@ -21,8 +21,59 @@ const HYROX_S10_EVENTS=[
     "venueUrl": "https://hyrox.com/event/puma-hyrox-world-championships-stockholm/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "Adaptive Invitational Women",
+        "time": "14:40"
+      },
+      {
+        "day": 1,
+        "category": "Adaptive Invitational Men",
+        "time": "16:30"
+      },
+      {
+        "day": 1,
+        "category": "HYROX Doubles Mixed",
+        "time": "19:30"
+      },
+      {
+        "day": 4,
+        "category": "Early Registration",
+        "time": "14:00"
+      },
+      {
+        "day": 5,
+        "category": "Elite 15 Women",
+        "time": "07:00"
+      },
+      {
+        "day": 5,
+        "category": "Elite 15 Men",
+        "time": "08:30"
+      },
+      {
+        "day": 5,
+        "category": "Early Registration",
+        "time": "10:00"
+      },
+      {
+        "day": 6,
+        "category": "Elite 15 Pro Doubles Men",
+        "time": "09:35"
+      },
+      {
+        "day": 6,
+        "category": "HYROX Men (Age Groups 60+)",
+        "time": "16:35"
+      },
+      {
+        "day": 6,
+        "category": "HYROX Women (Age Groups 60+)",
+        "time": "17:20"
+      }
+    ]
   },
   {
     "id": "s10-jakarta",

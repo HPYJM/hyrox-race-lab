@@ -164,8 +164,11 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000) {
       const TIME_RE   = /\b(\d{1,2}:\d{2})\s*(?:AM|PM)?\s*[–\-]\s*(\d{1,2}:\d{2})/i;
       const TIME_SINGLE = /\b(\d{1,2}:\d{2})\s*(?:AM|PM)?\b/i;
 
-      // Map day name → day number (1-based from event start)
+      // Map day name → ISO weekday number (Mon=1 … Sun=7)
       const DAY_ORDER = { monday:1, tuesday:2, wednesday:3, thursday:4, friday:5, saturday:6, sunday:7 };
+      // A pure day-header line: contains a day name but NO time at all
+      const IS_DAY_HEADER = text =>
+        DAY_NAMES.test(text) && !TIME_RE.test(text) && !TIME_SINGLE.test(text);
 
       const waves = [];
       let currentDay = 1;
@@ -183,8 +186,8 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000) {
       for (const el of candidates) {
         const text = (el.innerText || '').trim();
 
-        // Day header detection
-        if (DAY_NAMES.test(text) && !TIME_RE.test(text)) {
+        // Day header detection — only pure day-name lines (no time on same line)
+        if (IS_DAY_HEADER(text)) {
           const m = text.match(DAY_NAMES);
           if (m) {
             const dayNum = DAY_ORDER[m[1].toLowerCase()];
@@ -192,7 +195,6 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000) {
               firstDayNum = dayNum;
               currentDay = 1;
             } else {
-              // Calculate relative day offset from first day
               currentDay = ((dayNum - firstDayNum + 7) % 7) + 1;
             }
           }
@@ -212,6 +214,7 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000) {
           .replace(/[–\-]/g, '').replace(/\s+/g, ' ').trim();
         // Strip trailing | and am/pm markers left by hyrox.com formatting
         cat = cat.replace(/\s*\|\s*(am|pm)\s*$/i, '')
+                 .replace(/\s*\|\s*(monday|tuesday|wednesday|thursday|friday|saturday|sunday),?\s*$/i, '')
                  .replace(/\s*\|+\s*$/, '')
                  .replace(/:\s*$/, '')
                  .trim();
@@ -401,8 +404,10 @@ function regenerateEventsDataJs() {
 
     let changed = 0;
     for (const ev of upcoming) {
+      // Do a full scrape if waves are missing, otherwise light probe
+      const needWaves = !ev.waves || ev.waves.length === 0;
       process.stdout.write(`  ${ev.city.padEnd(22)}`);
-      const result = await probeEvent(page, ev.venueUrl, /* full= */ false);
+      const result = await probeEvent(page, ev.venueUrl, /* full= */ needWaves);
       if (!result) { console.log(' ⚠ skipped'); continue; }
 
       const prev        = ev.ticketsOnSale;
@@ -416,9 +421,23 @@ function regenerateEventsDataJs() {
         changed++;
       }
 
+      // Update waves if we did a full scrape and got real category names
+      let waveTag = '';
+      if (needWaves && result.waves && result.waves.length > 0) {
+        const allOpen = result.waves.every(w => w.category === 'Open');
+        if (!allOpen) {
+          ev.waves = result.waves;
+          ev.wavesConfirmed = result.wavesConfirmed || true;
+          waveTag = ` 📅 ${result.waves.length} waves`;
+          changed++;
+        } else {
+          waveTag = ' (times only — no categories yet)';
+        }
+      }
+
       const tag  = result.ticketsOnSale ? '🟢 ON SALE' : '⚪ no sale';
       const diff = prev !== result.ticketsOnSale ? ' ← CHANGED' : '';
-      console.log(` ${tag}${diff}${mapTag}`);
+      console.log(` ${tag}${diff}${mapTag}${waveTag}`);
       if (diff) changed++;
     }
     console.log(`  ${changed} change(s) in ${seasonKey}`);
