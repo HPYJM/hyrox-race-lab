@@ -4,23 +4,7 @@ const TRACKED_ATHLETES = [];
 // ─── SEED RACE DATA ───────────────────────────────────────────────────────────
 // These are verified manually from hyresult.com. New races discovered via
 // auto-sync are appended from localStorage (store.js).
-const SEED_RACES = [
-  {
-    resultId: 'LR3MS4JI4E9AD0',
-    id: "CGN'26", label: 'Cologne 2026 (Doubles)', athlete: 'N.A. Heyer + L. Ungefuk',
-    athleteSlug: 'nicolae-andrei-heyer', partner: 'Leon Ungefuk', partnerSlug: 'leon-ungefuk',
-    category: 'DOUBLES', division: 'DBMEN', ageGroup: '25-29',
-    rank: '#585 of 1136', ag: '#149 AG25-29', pct: 'Top 57.6%',
-    color: '#8b5cf6',
-    total: '1:16:44', totalSecs: 4604,
-    runsSecs: 2752, workoutsSecs: 1466, roxzoneSecs: 386,
-    runs:     [272, 326, 345, 339, 385, 374, 370, 341],
-    workouts: [232, 120, 171, 128, 276,  80, 235, 224],
-    rxEntry:  [  3,  29,  10,   5,  36,  46,  23],
-    rxExit:   [ 37,  28,  57,  14,  23,  28,  47],
-    radarStrength: null  // doubles — different division
-  }
-];
+const SEED_RACES = [];
 
 // ─── ACTIVE RACE LIST (merged seed + store) ──────────────────────────────────
 // Populated by store.js on init. Do not modify directly.

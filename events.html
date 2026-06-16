@@ -1076,6 +1076,7 @@
     'Beijing':         'https://hyrox.com/wp-content/uploads/2026/03/微信图片_20260312222618_665_70.jpg',
     'Shanghai':        'https://hyrox.com/wp-content/uploads/2026/03/微信图片_20260312213404_663_70.jpg',
     'Mumbai':          'https://hyrox.com/wp-content/uploads/2026/03/Mumbai-image-1280x869.png',
+    'Cairo':            'https://hyrox.com/wp-content/uploads/2026/03/1500x1000_abudhabi-1280x853.jpg',
   };
 
   // Per-id overrides still supported for S9 (keeps backwards compat)
@@ -1101,8 +1102,24 @@
     'world-champs-26': CITY_IMG_BY_CITY['Stockholm'],
   };
 
+  // Build a lowercase→key lookup once for fast case-insensitive matching
+  const CITY_IMG_LC = Object.fromEntries(
+    Object.entries(CITY_IMG_BY_CITY).map(([k, v]) => [k.toLowerCase(), v])
+  );
+
   function cityImg(ev) {
-    return CITY_IMG_S9[ev.id] || CITY_IMG_BY_CITY[ev.city] || '';
+    // 1. Exact per-id or per-city match
+    const exact = CITY_IMG_S9[ev.id] || CITY_IMG_BY_CITY[ev.city];
+    if (exact) return exact;
+
+    // 2. Strip known prefixes / venue suffixes, then case-insensitive lookup
+    const normalized = ev.city
+      .replace(/^(?:PUMA\s+)?(?:World\s+)?Championships?\s+/i, '')
+      .replace(/^Youngstars?\s+/i, '')
+      .replace(/\s+ExCe[lL].*$/i, '')   // "London ExCeL" → "London"
+      .trim();
+
+    return CITY_IMG_LC[normalized.toLowerCase()] || '';
   }
 
   // ── IATA codes (by city name) ──────────────────────────────────────────────
@@ -1181,7 +1198,9 @@
   // The live probe cannot work — hyrox.com is JS-rendered so raw HTML never
   // contains the ticket button. Hide only when explicitly set false in data.
   function isTicketsOnSale(ev) {
-    if (ev.ticketsOnSale !== undefined) return ev.ticketsOnSale === true;
+    if (ev.ticketsOnSale === true) return true;
+    // scraper sets false when it can't detect the button (JS-rendered pages);
+    // fall through to heuristic: show tag for upcoming events with a confirmed venue/URL
     return todayStatus(ev) === 'upcoming' && !!ev.venueUrl && ev.venue && ev.venue !== 'TBC';
   }
 

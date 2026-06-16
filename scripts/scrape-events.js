@@ -121,7 +121,12 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000) {
       const elems      = Array.from(document.querySelectorAll('button, a'));
       const ticketsOn  = elems.some(el => new RegExp(ticketRe).test(el.textContent));
 
-      if (!doFull) return { ticketsOnSale: ticketsOn };
+      // Map PDF detection runs for all probes (maps get published close to event date)
+      const mapLinkEl = Array.from(document.querySelectorAll('a[href*=".pdf"]'))
+        .find(a => /map|floor.?plan|venue/i.test(a.href + a.innerText));
+      const mapImgQuick = mapLinkEl ? mapLinkEl.href : null;
+
+      if (!doFull) return { ticketsOnSale: ticketsOn, mapImg: mapImgQuick };
 
       // ── Full scrape for new events ──────────────────────────────────────
       const title    = document.title || '';
@@ -148,10 +153,8 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000) {
       const countryHint = metaGeo ? metaGeo.content : null;
       const isChamp = /world.{0,10}champ|championship/i.test(title + (h1 ? h1.innerText : ''));
 
-      // Map PDF
-      const mapLink = Array.from(document.querySelectorAll('a[href*=".pdf"]'))
-        .find(a => /map|floor.?plan|venue/i.test(a.href + a.innerText));
-      const mapImg = mapLink ? mapLink.href : null;
+      // Map PDF (also detected in light probe above; here we reuse it)
+      const mapImg = mapImgQuick;
 
       // ── Wave scraping ──────────────────────────────────────────────────
       // Pattern: <b> or <strong> "SATURDAY 1 AUGUST 2026" (day header)
@@ -243,8 +246,10 @@ function buildNewEvent(venueUrl, scraped, seasonKey, allKnownEvents = []) {
   let city = scraped.scrapedCity || '';
   // Strip "HYROX" prefix/suffix and sponsor names
   city = city.replace(/^.*hyrox\s+/i, '').replace(/\s*\|.*$/, '').trim();
-  // Title-case
-  city = city.replace(/\b\w/g, c => c.toUpperCase());
+  // Proper title-case: lowercase first so ALL-CAPS source text (e.g. "BORDEAUX") converts correctly
+  city = city.toLowerCase().replace(/(?:^|\s)(\S)/g, (m, c) => m.replace(c, c.toUpperCase()));
+  // Preserve special uppercase first chars like İ (Turkish dotted I)
+  if (/^i̇/i.test(city) && /izmir/i.test(city)) city = 'İzmir';
 
   // Derive country from URL path or title
   const urlSlug = venueUrl.replace(/.*\/event\//, '').replace(/\/$/, '');
@@ -392,9 +397,17 @@ function regenerateEventsDataJs() {
       const prev        = ev.ticketsOnSale;
       ev.ticketsOnSale  = result.ticketsOnSale;
 
+      // Update mapImg if it was null and scraper now found a PDF
+      let mapTag = '';
+      if (!ev.mapImg && result.mapImg) {
+        ev.mapImg = result.mapImg;
+        mapTag = ' 🗺 map found!';
+        changed++;
+      }
+
       const tag  = result.ticketsOnSale ? '🟢 ON SALE' : '⚪ no sale';
       const diff = prev !== result.ticketsOnSale ? ' ← CHANGED' : '';
-      console.log(` ${tag}${diff}`);
+      console.log(` ${tag}${diff}${mapTag}`);
       if (diff) changed++;
     }
     console.log(`  ${changed} change(s) in ${seasonKey}`);
