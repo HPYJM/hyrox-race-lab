@@ -16,94 +16,54 @@
     "wavesConfirmed": true,
     "waves": [
       {
-        "day": 1,
-        "category": "Wednesday:",
-        "time": "14:00"
-      },
-      {
-        "day": 1,
-        "category": "Thursday:",
-        "time": "10:00"
-      },
-      {
-        "day": 1,
-        "category": "Friday:",
-        "time": "08:00"
-      },
-      {
-        "day": 1,
-        "category": "Saturday:",
-        "time": "08:00"
-      },
-      {
-        "day": 1,
-        "category": "Sunday:",
-        "time": "08:00"
+        "day": 6,
+        "category": "Elite 15 Women",
+        "time": "07:00"
       },
       {
         "day": 6,
-        "category": "Elite 15 Women |",
-        "time": "7:00"
-      },
-      {
-        "day": 6,
-        "category": "Elite 15 Men |",
-        "time": "8:30"
+        "category": "Elite 15 Men",
+        "time": "08:30"
       },
       {
         "day": 7,
-        "category": "HYROX Men (Age Groups 60+) | pm",
-        "time": "4:35"
+        "category": "HYROX Men (Age Groups 60+)",
+        "time": "04:35"
       },
       {
         "day": 7,
-        "category": "HYROX Women (Age Groups 60+) | pm",
-        "time": "5:20"
+        "category": "HYROX Women (Age Groups 60+)",
+        "time": "05:20"
       },
       {
         "day": 7,
-        "category": "Elite 15 Pro Doubles Men |",
-        "time": "9:35"
+        "category": "Elite 15 Pro Doubles Men",
+        "time": "09:35"
       },
       {
         "day": 2,
-        "category": "HYROX Doubles Mixed | pm",
-        "time": "7:30"
+        "category": "HYROX Doubles Mixed",
+        "time": "07:30"
       },
       {
         "day": 2,
-        "category": "Adaptive Invitational Women |",
-        "time": "2:40"
+        "category": "Adaptive Invitational Women",
+        "time": "02:40"
       },
       {
         "day": 2,
-        "category": "Adaptive Invitational Men |",
-        "time": "4:30"
+        "category": "Adaptive Invitational Men",
+        "time": "04:30"
       },
       {
         "day": 5,
-        "category": "Early Registration | pm",
-        "time": "2:00"
+        "category": "Early Registration",
+        "time": "02:00"
       },
       {
         "day": 6,
-        "category": "Early Registration | pm",
+        "category": "Early Registration",
         "time": "10:00"
-      },
-      {
-        "day": 7,
-        "category": "pm",
-        "time": "6:30"
-      },
-      {
-        "day": 1,
-        "category": "pm",
-        "time": "6:30"
-      },
-      {
-        "day": 2,
-        "category": "pm",
-        "time": "6:30"
       }
     ]
   },
@@ -123,66 +83,6 @@
     "mapImgDirect": null,
     "wavesConfirmed": true,
     "waves": [
-      {
-        "day": 1,
-        "category": "PM",
-        "time": "09:00"
-      },
-      {
-        "day": 1,
-        "category": "PM",
-        "time": "14:10"
-      },
-      {
-        "day": 1,
-        "category": "PM",
-        "time": "14:30"
-      },
-      {
-        "day": 1,
-        "category": "PM",
-        "time": "15:10"
-      },
-      {
-        "day": 1,
-        "category": "PM",
-        "time": "19:00"
-      },
-      {
-        "day": 1,
-        "category": "PM",
-        "time": "19:40"
-      },
-      {
-        "day": 2,
-        "category": "PM",
-        "time": "09:00"
-      },
-      {
-        "day": 2,
-        "category": "PM",
-        "time": "12:20"
-      },
-      {
-        "day": 2,
-        "category": "PM",
-        "time": "14:30"
-      },
-      {
-        "day": 2,
-        "category": "PM",
-        "time": "18:30"
-      },
-      {
-        "day": 2,
-        "category": "PM",
-        "time": "19:00"
-      },
-      {
-        "day": 2,
-        "category": "PM",
-        "time": "20:00"
-      },
       {
         "day": 1,
         "category": "Open",
@@ -261,131 +161,6 @@
     "mapImgDirect": null,
     "wavesConfirmed": true,
     "waves": [
-      {
-        "day": 1,
-        "category": "AM",
-        "time": "08:00"
-      },
-      {
-        "day": 1,
-        "category": "AM",
-        "time": "09:30"
-      },
-      {
-        "day": 1,
-        "category": "PM",
-        "time": "12:00"
-      },
-      {
-        "day": 1,
-        "category": "PM",
-        "time": "13:50"
-      },
-      {
-        "day": 1,
-        "category": "PM",
-        "time": "16:30"
-      },
-      {
-        "day": 1,
-        "category": "PM",
-        "time": "17:10"
-      },
-      {
-        "day": 1,
-        "category": "PM",
-        "time": "18:30"
-      },
-      {
-        "day": 1,
-        "category": "PM",
-        "time": "09:00"
-      },
-      {
-        "day": 1,
-        "category": "PM",
-        "time": "14:30"
-      },
-      {
-        "day": 3,
-        "category": "AM",
-        "time": "08:00"
-      },
-      {
-        "day": 3,
-        "category": "PM",
-        "time": "10:50"
-      },
-      {
-        "day": 3,
-        "category": "PM",
-        "time": "12:30"
-      },
-      {
-        "day": 3,
-        "category": "PM",
-        "time": "14:10"
-      },
-      {
-        "day": 3,
-        "category": "PM",
-        "time": "14:50"
-      },
-      {
-        "day": 3,
-        "category": "PM",
-        "time": "16:10"
-      },
-      {
-        "day": 3,
-        "category": "PM",
-        "time": "17:30"
-      },
-      {
-        "day": 4,
-        "category": "AM",
-        "time": "08:00"
-      },
-      {
-        "day": 4,
-        "category": "PM",
-        "time": "12:10"
-      },
-      {
-        "day": 4,
-        "category": "PM",
-        "time": "15:00"
-      },
-      {
-        "day": 4,
-        "category": "PM",
-        "time": "18:20"
-      },
-      {
-        "day": 5,
-        "category": "AM",
-        "time": "08:00"
-      },
-      {
-        "day": 5,
-        "category": "AM",
-        "time": "10:00"
-      },
-      {
-        "day": 5,
-        "category": "PM",
-        "time": "12:10"
-      },
-      {
-        "day": 5,
-        "category": "PM",
-        "time": "14:30"
-      },
-      {
-        "day": 5,
-        "category": "PM",
-        "time": "18:20"
-      },
       {
         "day": 5,
         "category": "Open",
@@ -646,92 +421,92 @@
     "waves": [
       {
         "day": 1,
-        "category": "HYROX MEN:",
+        "category": "HYROX MEN",
         "time": "07:30"
       },
       {
         "day": 1,
-        "category": "HYROX PRO WOMEN:",
+        "category": "HYROX PRO WOMEN",
         "time": "12:00"
       },
       {
         "day": 1,
-        "category": "HYROX PRO MEN:",
+        "category": "HYROX PRO MEN",
         "time": "13:10"
       },
       {
         "day": 1,
-        "category": "HYROX DOUBLES MIXED:",
+        "category": "HYROX DOUBLES MIXED",
         "time": "14:40"
       },
       {
         "day": 1,
-        "category": "CORPORATE MEN’S RELAY:",
+        "category": "CORPORATE MEN’S RELAY",
         "time": "19:10"
       },
       {
         "day": 1,
-        "category": "HYROX MEN’S RELAY:",
+        "category": "HYROX MEN’S RELAY",
         "time": "19:15"
       },
       {
         "day": 1,
-        "category": "CORPORATE MIXED RELAY:",
+        "category": "CORPORATE MIXED RELAY",
         "time": "19:30"
       },
       {
         "day": 1,
-        "category": "HYROX MIXED RELAY:",
+        "category": "HYROX MIXED RELAY",
         "time": "19:35"
       },
       {
         "day": 1,
-        "category": "CORPORATE WOMEN’S RELAY:",
+        "category": "CORPORATE WOMEN’S RELAY",
         "time": "20:10"
       },
       {
         "day": 1,
-        "category": "HYROX WOMEN’S RELAY:",
+        "category": "HYROX WOMEN’S RELAY",
         "time": "20:15"
       },
       {
         "day": 2,
-        "category": "HYROX DOUBLES WOMEN:",
+        "category": "HYROX DOUBLES WOMEN",
         "time": "07:30"
       },
       {
         "day": 2,
-        "category": "HYROX WOMEN:",
+        "category": "HYROX WOMEN",
         "time": "12:40"
       },
       {
         "day": 2,
-        "category": "HYROX DOUBLES MEN:",
+        "category": "HYROX DOUBLES MEN",
         "time": "16:00"
       },
       {
         "day": 2,
-        "category": "HYROX PRO DOUBLES WOMEN:",
+        "category": "HYROX PRO DOUBLES WOMEN",
         "time": "19:10"
       },
       {
         "day": 2,
-        "category": "HYROX PRO DOUBLES MEN:",
+        "category": "HYROX PRO DOUBLES MEN",
         "time": "20:00"
       },
       {
         "day": 3,
-        "category": "HYROX DOUBLES WOMEN:",
+        "category": "HYROX DOUBLES WOMEN",
         "time": "07:00"
       },
       {
         "day": 3,
-        "category": "HYROX DOUBLES MIXED:",
+        "category": "HYROX DOUBLES MIXED",
         "time": "10:10"
       },
       {
         "day": 3,
-        "category": "HYROX DOUBLES MEN:",
+        "category": "HYROX DOUBLES MEN",
         "time": "12:30"
       }
     ]
@@ -945,17 +720,17 @@
       {
         "day": 1,
         "category": "HYROX MEN ADAPTIVE /10:50",
-        "time": "8:00"
+        "time": "08:00"
       },
       {
         "day": 2,
         "category": "HYROX MEN ADAPTIVE /9:50",
-        "time": "8:00"
+        "time": "08:00"
       },
       {
         "day": 3,
         "category": "HYROX MEN ADAPTIVE /13:20",
-        "time": "8:00"
+        "time": "08:00"
       }
     ]
   },
@@ -1028,23 +803,23 @@
     "waves": [
       {
         "day": 2,
-        "category": "Girls 1213 Years | am",
-        "time": "8:00"
+        "category": "Girls 1213 Years",
+        "time": "08:00"
       },
       {
         "day": 2,
-        "category": "Boys 1213 Years | pm",
+        "category": "Boys 1213 Years",
         "time": "10:50"
       },
       {
         "day": 2,
-        "category": "Girls 1415 Years | pm",
-        "time": "1:40"
+        "category": "Girls 1415 Years",
+        "time": "01:40"
       },
       {
         "day": 2,
-        "category": "Boys 1415 Years | pm",
-        "time": "4:20"
+        "category": "Boys 1415 Years",
+        "time": "04:20"
       }
     ]
   },
@@ -1291,7 +1066,7 @@
       {
         "day": 1,
         "category": "HYROX MEN/ HYROX MEN ADAPTIVE",
-        "time": "8:00"
+        "time": "08:00"
       },
       {
         "day": 1,
@@ -1321,7 +1096,7 @@
       {
         "day": 2,
         "category": "HYROX DOUBLES MIXED",
-        "time": "8:00"
+        "time": "08:00"
       },
       {
         "day": 2,
@@ -1436,212 +1211,212 @@
     "waves": [
       {
         "day": 1,
-        "category": "HYROX MEN |",
+        "category": "HYROX MEN",
         "time": "08:00"
       },
       {
         "day": 1,
-        "category": "HYROX ADAPTIVE MEN |",
+        "category": "HYROX ADAPTIVE MEN",
         "time": "08:00"
       },
       {
         "day": 1,
-        "category": "HYROX DOUBLES MEN |",
+        "category": "HYROX DOUBLES MEN",
         "time": "10:40"
       },
       {
         "day": 1,
-        "category": "HYROX DOUBLES WOMEN |",
+        "category": "HYROX DOUBLES WOMEN",
         "time": "13:30"
       },
       {
         "day": 1,
-        "category": "HYROX WOMEN |",
+        "category": "HYROX WOMEN",
         "time": "15:40"
       },
       {
         "day": 1,
-        "category": "HYROX ADAPTIVE WOMEN |",
+        "category": "HYROX ADAPTIVE WOMEN",
         "time": "15:40"
       },
       {
         "day": 1,
-        "category": "HYROX DOUBLES MIXED |",
+        "category": "HYROX DOUBLES MIXED",
         "time": "18:10"
       },
       {
         "day": 2,
-        "category": "HYROX MEN |",
+        "category": "HYROX MEN",
         "time": "08:00"
       },
       {
         "day": 2,
-        "category": "HYROX ADAPTIVE MEN |",
+        "category": "HYROX ADAPTIVE MEN",
         "time": "08:00"
       },
       {
         "day": 2,
-        "category": "HYROX DOUBLES MEN |",
+        "category": "HYROX DOUBLES MEN",
         "time": "10:40"
       },
       {
         "day": 2,
-        "category": "HYROX DOUBLES WOMEN |",
+        "category": "HYROX DOUBLES WOMEN",
         "time": "13:30"
       },
       {
         "day": 2,
-        "category": "HYROX WOMEN |",
+        "category": "HYROX WOMEN",
         "time": "15:50"
       },
       {
         "day": 2,
-        "category": "HYROX ADAPTIVE WOMEN |",
+        "category": "HYROX ADAPTIVE WOMEN",
         "time": "15:50"
       },
       {
         "day": 2,
-        "category": "HYROX DOUBLES MIXED |",
+        "category": "HYROX DOUBLES MIXED",
         "time": "18:20"
       },
       {
         "day": 3,
-        "category": "HYROX MEN |",
+        "category": "HYROX MEN",
         "time": "08:00"
       },
       {
         "day": 3,
-        "category": "HYROX ADAPTIVE MEN |",
+        "category": "HYROX ADAPTIVE MEN",
         "time": "08:00"
       },
       {
         "day": 3,
-        "category": "HYROX DOUBLES MEN |",
+        "category": "HYROX DOUBLES MEN",
         "time": "10:40"
       },
       {
         "day": 3,
-        "category": "HYROX DOUBLES WOMEN |",
+        "category": "HYROX DOUBLES WOMEN",
         "time": "13:30"
       },
       {
         "day": 3,
-        "category": "HYROX WOMEN |",
+        "category": "HYROX WOMEN",
         "time": "15:50"
       },
       {
         "day": 3,
-        "category": "HYROX ADAPTIVE WOMEN |",
+        "category": "HYROX ADAPTIVE WOMEN",
         "time": "15:50"
       },
       {
         "day": 3,
-        "category": "HYROX DOUBLES MIXED |",
+        "category": "HYROX DOUBLES MIXED",
         "time": "18:20"
       },
       {
         "day": 4,
-        "category": "HYROX MEN |",
+        "category": "HYROX MEN",
         "time": "08:00"
       },
       {
         "day": 4,
-        "category": "HYROX ADAPTIVE MEN |",
+        "category": "HYROX ADAPTIVE MEN",
         "time": "08:00"
       },
       {
         "day": 4,
-        "category": "HYROX PRO MEN |",
+        "category": "HYROX PRO MEN",
         "time": "09:40"
       },
       {
         "day": 4,
-        "category": "HYROX PRO WOMEN |",
+        "category": "HYROX PRO WOMEN",
         "time": "12:50"
       },
       {
         "day": 4,
-        "category": "HYROX DOUBLES MEN |",
+        "category": "HYROX DOUBLES MEN",
         "time": "14:20"
       },
       {
         "day": 4,
-        "category": "HYROX DOUBLES MIXED |",
+        "category": "HYROX DOUBLES MIXED",
         "time": "15:40"
       },
       {
         "day": 4,
-        "category": "HYROX DOUBLES WOMEN |",
+        "category": "HYROX DOUBLES WOMEN",
         "time": "17:20"
       },
       {
         "day": 4,
-        "category": "HYROX WOMEN |",
+        "category": "HYROX WOMEN",
         "time": "18:20"
       },
       {
         "day": 4,
-        "category": "HYROX ADAPTIVE WOMEN |",
+        "category": "HYROX ADAPTIVE WOMEN",
         "time": "18:20"
       },
       {
         "day": 4,
-        "category": "HYROX MEN’S RELAY |",
+        "category": "HYROX MEN’S RELAY",
         "time": "19:40"
       },
       {
         "day": 4,
-        "category": "HYROX MIXED RELAY |",
+        "category": "HYROX MIXED RELAY",
         "time": "20:00"
       },
       {
         "day": 4,
-        "category": "HYROX WOMEN’S RELAY |",
+        "category": "HYROX WOMEN’S RELAY",
         "time": "20:20"
       },
       {
         "day": 5,
-        "category": "HYROX MEN |",
+        "category": "HYROX MEN",
         "time": "08:00"
       },
       {
         "day": 5,
-        "category": "HYROX ADAPTIVE MEN |",
+        "category": "HYROX ADAPTIVE MEN",
         "time": "08:00"
       },
       {
         "day": 5,
-        "category": "HYROX DOUBLES MIXED |",
+        "category": "HYROX DOUBLES MIXED",
         "time": "12:40"
       },
       {
         "day": 5,
-        "category": "HYROX PRO DOUBLES WOMEN |",
+        "category": "HYROX PRO DOUBLES WOMEN",
         "time": "17:10"
       },
       {
         "day": 5,
-        "category": "HYROX PRO DOUBLES MEN |",
+        "category": "HYROX PRO DOUBLES MEN",
         "time": "18:50"
       },
       {
         "day": 6,
-        "category": "HYROX DOUBLES WOMEN |",
+        "category": "HYROX DOUBLES WOMEN",
         "time": "08:00"
       },
       {
         "day": 6,
-        "category": "HYROX WOMEN |",
+        "category": "HYROX WOMEN",
         "time": "12:20"
       },
       {
         "day": 6,
-        "category": "HYROX ADAPTIVE WOMEN |",
+        "category": "HYROX ADAPTIVE WOMEN",
         "time": "12:20"
       },
       {
         "day": 6,
-        "category": "HYROX DOUBLES MEN |",
+        "category": "HYROX DOUBLES MEN",
         "time": "15:50"
       }
     ]
@@ -1732,8 +1507,8 @@
     "waves": [
       {
         "day": 1,
-        "category": "BOYS 1011 YRS |",
-        "time": "7:55"
+        "category": "BOYS 1011 YRS",
+        "time": "07:55"
       }
     ]
   },

@@ -1748,11 +1748,23 @@
         const dayDate = new Date(startDate);
         dayDate.setDate(startDate.getDate() + (day - 1));
         const dayLabel = dayDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-        const rows = ev.waves.filter(w => w.day === day).map(w => `
+        const rows = ev.waves.filter(w => w.day === day).map(w => {
+          // Sanitise category: strip trailing |, :, | am/pm; normalise AM/PM headers
+          let cat = (w.category || 'Open')
+            .replace(/\s*\|\s*(am|pm)\s*$/i, '')
+            .replace(/\s*\|+\s*$/, '')
+            .replace(/:\s*$/, '')
+            .trim();
+          if (/^am$/i.test(cat)) cat = 'Morning';
+          if (/^pm$/i.test(cat)) cat = 'Afternoon';
+          // Pad single-digit hours: 7:30 → 07:30
+          const time = w.time.replace(/^(\d):/, '0$1:');
+          return `
           <div class="ev-wave-row">
-            <div class="ev-wave-cat">${w.category}</div>
-            <div class="ev-wave-time">${w.time}</div>
-          </div>`).join('');
+            <div class="ev-wave-cat">${cat}</div>
+            <div class="ev-wave-time">${time}</div>
+          </div>`;
+        }).join('');
         return `<div class="ev-wave-day-header">Day ${day} — ${dayLabel}</div>${rows}`;
       }).join('');
     }

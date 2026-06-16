@@ -204,18 +204,29 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000) {
         if (!timeMatch) continue;
 
         const time = timeMatch[1]; // start time only
+        // Zero-pad to HH:MM
+        const timePadded = time.replace(/^(\d):/, '0$1:');
         // Category = everything before the first time token, cleaned up
-        const cat = text
+        let cat = text
           .replace(TIME_RE, '').replace(TIME_SINGLE, '')
-          .replace(/[–\-]/g, '').replace(/\s+/g, ' ').trim()
-          || 'Open';
+          .replace(/[–\-]/g, '').replace(/\s+/g, ' ').trim();
+        // Strip trailing | and am/pm markers left by hyrox.com formatting
+        cat = cat.replace(/\s*\|\s*(am|pm)\s*$/i, '')
+                 .replace(/\s*\|+\s*$/, '')
+                 .replace(/:\s*$/, '')
+                 .trim();
+        // Discard entries where the "category" is just a day name or AM/PM section header
+        const isLayoutNoise = /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i.test(cat)
+          || /^(am|pm)$/i.test(cat);
+        if (isLayoutNoise) continue;
+        if (!cat) cat = 'Open';
 
         // Skip noise: long prose sentences that happen to contain a time
         if (cat.length > 60 || cat.split(/\s+/).length > 7) continue;
 
         // Skip duplicates (same day + category + time already added)
-        const isDupe = waves.some(w => w.day === currentDay && w.time === time && w.category === cat);
-        if (!isDupe) waves.push({ day: currentDay, category: cat, time });
+        const isDupe = waves.some(w => w.day === currentDay && w.time === timePadded && w.category === cat);
+        if (!isDupe) waves.push({ day: currentDay, category: cat, time: timePadded });
       }
 
       return {
