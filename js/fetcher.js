@@ -8,7 +8,7 @@
 // CF_WORKER_URL: set this to your Cloudflare Worker URL once deployed.
 // Deploy cf-worker/proxy.js at https://dash.cloudflare.com/workers
 // e.g. "https://hyrox-proxy.YOUR-SUBDOMAIN.workers.dev"
-const CF_WORKER_URL = '';
+const CF_WORKER_URL = 'https://hyrox-race-lab.andreasambrusg.workers.dev';
 
 const CORS_PROXIES = [
   // Cloudflare Worker (dedicated, most reliable) — enabled when CF_WORKER_URL is set
