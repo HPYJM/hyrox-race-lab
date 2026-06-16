@@ -1,5 +1,4 @@
-// AUTO-GENERATED
-// Generated: 2026-06-16T14:15:25.884Z
+// AUTO-GENERATED Generated: 2026-06-16T14:21:36.102Z
 
 const HYROX_S7_EVENTS=[];
 
@@ -22,59 +21,8 @@ const HYROX_S10_EVENTS=[
     "venueUrl": "https://hyrox.com/event/puma-hyrox-world-championships-stockholm/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": true,
-    "waves": [
-      {
-        "day": 6,
-        "category": "Elite 15 Women",
-        "time": "07:00"
-      },
-      {
-        "day": 6,
-        "category": "Elite 15 Men",
-        "time": "08:30"
-      },
-      {
-        "day": 7,
-        "category": "HYROX Men (Age Groups 60+)",
-        "time": "04:35"
-      },
-      {
-        "day": 7,
-        "category": "HYROX Women (Age Groups 60+)",
-        "time": "05:20"
-      },
-      {
-        "day": 7,
-        "category": "Elite 15 Pro Doubles Men",
-        "time": "09:35"
-      },
-      {
-        "day": 2,
-        "category": "HYROX Doubles Mixed",
-        "time": "07:30"
-      },
-      {
-        "day": 2,
-        "category": "Adaptive Invitational Women",
-        "time": "02:40"
-      },
-      {
-        "day": 2,
-        "category": "Adaptive Invitational Men",
-        "time": "04:30"
-      },
-      {
-        "day": 5,
-        "category": "Early Registration",
-        "time": "02:00"
-      },
-      {
-        "day": 6,
-        "category": "Early Registration",
-        "time": "10:00"
-      }
-    ]
+    "wavesConfirmed": false,
+    "waves": []
   },
   {
     "id": "s10-jakarta",
@@ -90,7 +38,7 @@ const HYROX_S10_EVENTS=[
     "venueUrl": "https://hyrox.com/event/hyrox-jakarta/",
     "mapImg": "https://hyrox.com/wp-content/uploads/2026/06/ID-JKT-Floor-Plan_Bilingual.pdf",
     "mapImgDirect": null,
-    "wavesConfirmed": true,
+    "wavesConfirmed": false,
     "waves": [
       {
         "day": 1,
@@ -168,7 +116,7 @@ const HYROX_S10_EVENTS=[
     "venueUrl": "https://hyrox.com/event/hyrox-sydney/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": true,
+    "wavesConfirmed": false,
     "waves": [
       {
         "day": 5,
