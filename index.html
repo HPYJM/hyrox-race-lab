@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HYROX Race Lab — compare run, workout, and roxzone split times across athletes and events.">
+  <title>HYROX Race Lab</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ── PAGE TITLE BAR ────────────────────────────────────────────────────── -->
+<div class="page-title-bar">
+  <div class="page-title-left">
+    <h1>HYROX Race Lab</h1>
+    <p class="subtitle">Live split analysis — Berlin 2026 · Frankfurt 2025 · Riga 2026</p>
+  </div>
+  <nav class="title-nav">
+    <a class="title-nav-link title-nav-analysis active" href="index.html">📊 Race Lab</a>
+    <a class="title-nav-link title-nav-events" href="events.html">📅 Events</a>
+    <a class="title-nav-link title-nav-news" href="news.html">📰 News</a>
+  </nav>
+</div>
+
+<!-- ── NEWS TICKER ───────────────────────────────────────────────────────── -->
+<div class="ticker-bar">
+  <span class="ticker-label">LIVE</span>
+  <div class="ticker-track-wrap">
+    <div class="ticker-track" id="tickerTrack">
+      <span class="ticker-item">🏆 World Champs Stockholm — Jun 18–21 · Elite 15 + Pro categories</span>
+      <span class="ticker-item">🏅 World Record broken at Berlin 2026 — Mixed Doubles</span>
+      <span class="ticker-item">🎟 London Olympia 2026 — EMEA Regional Championships</span>
+      <span class="ticker-item">📣 HYROX Season 10 · 60 events · Jun – Dec 2026</span>
+      <span class="ticker-item">🏃 Istanbul · Bangkok · Cape Town — tickets on sale now</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── ATHLETES SIDE PANEL ───────────────────────────────────────────────── -->
+<div class="athletes-panel-overlay" id="athletesPanelOverlay"></div>
+<aside class="athletes-panel" id="athletesPanel">
+  <div class="athletes-panel-head">
+    <h2>👤 Athletes</h2>
+    <button class="athletes-panel-close" id="athletesPanelClose" title="Close">✕</button>
+  </div>
+  <div class="athletes-panel-body">
+    <p class="athletes-panel-hint">Add athletes to compare. Sync picks up their races automatically.</p>
+    <div class="athlete-search-row">
+      <input class="athlete-input" id="athleteInput" type="text"
+             placeholder="Name, slug or hyresult.com URL"
+             autocomplete="off" spellcheck="false" />
+      <button class="athlete-add-btn" id="athleteAddBtn">+ Add</button>
+    </div>
+    <div class="athlete-search-status" id="athleteSearchStatus"></div>
+    <div class="athlete-list" id="athleteList"></div>
+  </div>
+</aside>
+
+<!-- ── HEADER ──────────────────────────────────────────────────────────── -->
+<header id="races">
+  <div class="section-head">
+    <h2>🏅  Races</h2>
+    <div class="rule"></div>
+    <div class="races-controls">
+      <button class="athletes-panel-btn" id="athletesPanelBtn" title="Manage tracked athletes">👤 Athletes</button>
+      <button class="share-btn" id="shareLinkBtn" title="Copy shareable link">🔗 Share</button>
+      <div class="cat-toggle" id="catToggle">
+        <button class="cat-btn active" data-cat="OPEN">Single</button>
+        <button class="cat-btn" data-cat="DOUBLES">Double</button>
+      </div>
+    </div>
+    <button class="section-toggle" data-target="racesBody" title="Hide/show">▾</button>
+  </div>
+  <!-- sync status banner -->
+  <div class="section-body" id="racesBody">
+  <div class="sync-banner hidden" id="syncBanner">
+    <span class="sync-spinner" id="syncSpinner"></span>
+    <span id="syncMsg">Checking for new races…</span>
+    <button class="sync-close" id="syncClose" aria-label="Dismiss">✕</button>
+  </div>
+  <div class="race-cards" id="raceCards"></div>
+  </div>
+</header>
+
+<!-- ── MAIN ───────────────────────────────────────────────────────────────── -->
+<main>
+
+  <!-- PERFORMANCE RADAR -->
+  <div class="section" id="radar">
+    <div class="section-head">
+      <h2>🕸️&nbsp; Performance Radar — field percentile strength</h2>
+      <div class="rule"></div>
+      <button class="section-toggle" data-target="radarBody" title="Hide/show">▾</button>
+    </div>
+    <div class="section-body" id="radarBody">
+    <div class="ccard">
+      <div class="ctitle">Strength score per station (100 − top% rank) — higher = better vs. field</div>
+      <div style="max-width:600px;margin:0 auto">
+        <canvas id="radarChart"></canvas>
+      </div>
+      <div class="glegend" id="radarLegend" style="justify-content:center;margin-top:18px"></div>
+    </div>
+    </div>
+  </div>
+
+  <!-- RUNNING SPLITS -->
+  <div class="section" id="runs">
+    <div class="section-head">
+      <h2>🏃&nbsp; Running Splits — all 8 runs</h2>
+      <div class="rule"></div>
+      <button class="section-toggle" data-target="runsBody" title="Hide/show">▾</button>
+    </div>
+    <div class="section-body" id="runsBody">
+    <div class="ccard">
+      <div class="ctitle">Duration per run segment (lower = faster)</div>
+      <canvas id="runsChart"></canvas>
+      <div class="glegend" id="runsLegend"></div>
+    </div>
+    </div>
+  </div>
+
+  <!-- WORKOUT STATIONS -->
+  <div class="section" id="workouts">
+    <div class="section-head">
+      <h2>💪&nbsp; Workout Stations</h2>
+      <div class="rule"></div>
+      <button class="section-toggle" data-target="workoutsBody" title="Hide/show">▾</button>
+    </div>
+    <div class="section-body" id="workoutsBody">
+    <div class="wgrid" id="wgrid"></div>
+    </div>
+  </div>
+
+  <!-- ROXZONE TRANSITIONS -->
+  <div class="section" id="roxzone">
+    <div class="section-head">
+      <h2>⚡&nbsp; Roxzone Transitions — per station</h2>
+      <div class="rule"></div>
+      <button class="section-toggle" data-target="roxzoneBody" title="Hide/show">▾</button>
+    </div>
+    <div class="section-body" id="roxzoneBody">
+    <div class="ccard" style="margin-bottom:14px">
+      <div class="ctitle">Total transition time per station (entry corridor + exit corridor) — lower = faster</div>
+      <canvas id="rxTotalChart"></canvas>
+    </div>
+    <div class="rzgrid" id="rzgrid"></div>
+    </div>
+  </div>
+
+  <!-- CATEGORY TOTALS -->
+  <div class="section" id="totals">
+    <div class="section-head">
+      <h2>📊&nbsp; Category Totals</h2>
+      <div class="rule"></div>
+      <button class="section-toggle" data-target="totalsBody" title="Hide/show">▾</button>
+    </div>
+    <div class="section-body" id="totalsBody">
+    <div class="ccard">
+      <div class="ctitle">Total · Running · Workouts · Roxzone (transition)</div>
+      <canvas id="totalsChart"></canvas>
+    </div>
+    </div>
+  </div>
+
+  <!-- SPLIT TABLE -->
+  <div class="section" id="table">
+    <div class="section-head">
+      <h2>📋&nbsp; Split Times Table</h2>
+      <div class="rule"></div>
+      <button class="export-btn" id="exportCsv" title="Export visible table to CSV">⬇ CSV</button>
+      <button class="section-toggle" data-target="tableBody" title="Hide/show">▾</button>
+    </div>
+    <div class="section-body" id="tableBody">
+    <div class="filter-chips" id="splitFilter">
+      <button class="chip active" data-filter="all">All</button>
+      <button class="chip" data-filter="run">🏃 Run</button>
+      <button class="chip" data-filter="workout">💪 Workout</button>
+      <button class="chip" data-filter="roxzone">⚡ Roxzone</button>
+    </div>
+    <div class="ccard">
+      <table class="stable" id="stable"></table>
+    </div>
+    </div>
+  </div>
+
+
+</main>
+
+<!-- ── KEYBOARD SHORTCUTS MODAL ───────────────────────────────────────────── -->
+<div id="shortcutsModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>⌨️ Keyboard Shortcuts</span>
+      <button id="modalClose" class="modal-close" aria-label="Close">✕</button>
+    </div>
+    <div class="shortcut-grid">
+      <div class="sk-section">Race Toggles</div>
+      <div class="sk-row"><span class="kbd-group"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></span><span>Toggle BER / FRA / RI from all charts</span></div>
+      <div class="sk-row"><kbd>Esc</kbd><span>Reset — show all races &amp; clear filters</span></div>
+      <div class="sk-section">Table Filters</div>
+      <div class="sk-row"><kbd>A</kbd><span>Show all splits</span></div>
+      <div class="sk-row"><kbd>R</kbd><span>Show runs only</span></div>
+      <div class="sk-row"><kbd>W</kbd><span>Show workouts only</span></div>
+      <div class="sk-row"><kbd>X</kbd><span>Show roxzone only</span></div>
+      <div class="sk-section">Navigation</div>
+      <div class="sk-row"><kbd>?</kbd><span>Show this panel</span></div>
+      <div class="sk-row"><kbd>↑</kbd> <kbd>↓</kbd><span>Scroll between sections</span></div>
+    </div>
+    <p class="modal-tip">💡 Click any race card in the header to toggle it on/off. Table columns dim for hidden races.</p>
+  </div>
+</div>
+
+<!-- ── BACK TO TOP ────────────────────────────────────────────────────────── -->
+<button id="backToTop" class="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
+
+<script src="js/data.js"></script>
+<script src="js/store.js"></script>
+<script src="js/fetcher.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/table.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

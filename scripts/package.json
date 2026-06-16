@@ -1,0 +1,12 @@
+{
+  "name": "hyrox-scraper",
+  "version": "1.0.0",
+  "description": "Scraper scripts for HYROX event data",
+  "scripts": {
+    "migrate": "node migrate.js",
+    "scrape": "node scrape-events.js"
+  },
+  "dependencies": {
+    "playwright": "^1.44.0"
+  }
+}

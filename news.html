@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Latest HYROX news, announcements and event updates from hyrox.com.">
+  <title>HYROX News</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ── PAGE TITLE BAR ────────────────────────────────────────────────────── -->
+<div class="page-title-bar">
+  <div class="page-title-left">
+    <h1>HYROX News</h1>
+    <p class="subtitle">Latest articles &amp; updates from hyrox.com</p>
+  </div>
+  <nav class="title-nav">
+    <a class="title-nav-link title-nav-analysis" href="index.html">📊 Race Lab</a>
+    <a class="title-nav-link title-nav-events" href="events.html">📅 Events</a>
+    <a class="title-nav-link title-nav-news active" href="news.html">📰 News</a>
+  </nav>
+</div>
+
+<!-- ── NEWS TICKER ───────────────────────────────────────────────────────── -->
+<div class="ticker-bar">
+  <span class="ticker-label">LIVE</span>
+  <div class="ticker-track-wrap">
+    <div class="ticker-track" id="tickerTrack">
+      <span class="ticker-item">� World Champs Stockholm — Jun 18–21 · Elite 15 + Pro categories</span>
+      <span class="ticker-item">🏅 World Record broken at Berlin 2026 — Mixed Doubles</span>
+      <span class="ticker-item">🎟 London Olympia 2026 — EMEA Regional Championships</span>
+      <span class="ticker-item">📣 HYROX Season 10 · 60 events · Jun – Dec 2026</span>
+      <span class="ticker-item">🏃 Istanbul · Bangkok · Cape Town — tickets on sale now</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── NEWS PAGE ─────────────────────────────────────────────────────────── -->
+<main class="news-page-main">
+  <div class="news-page-head">
+    <h2>📰&nbsp; HYROX News</h2>
+    <p class="news-page-sub">Latest articles and updates from hyrox.com</p>
+  </div>
+  <div class="news-list" id="newsList">
+    <div class="news-loading">Loading news…</div>
+  </div>
+</main>
+
+<script src="js/fetcher.js"></script>
+<script>
+(async function () {
+  // Ticker — endless RAF scroll, no CSS animation restart
+  (function () {
+    const track = document.getElementById('tickerTrack');
+    if (!track) return;
+    track.innerHTML += track.innerHTML;
+    let pos = 0;
+    let rafId = null;
+    function tick() {
+      pos += 0.5;
+      if (pos >= track.scrollWidth / 2) pos -= track.scrollWidth / 2;
+      track.style.transform = 'translateX(' + (-pos) + 'px)';
+      rafId = requestAnimationFrame(tick);
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      } else {
+        if (!rafId) rafId = requestAnimationFrame(tick);
+      }
+    });
+    rafId = requestAnimationFrame(tick);
+  })();
+
+  // News cards
+  const list = document.getElementById('newsList');
+  if (!list) return;
+
+  if (location.protocol === 'file:') {
+    list.innerHTML = '<div class="news-offline">⚠ News unavailable on <code>file://</code>. Open via <code>npx serve .</code> for live feed.</div>';
+    return;
+  }
+
+  const items = await fetchNews(16);
+  if (!items || !items.length) {
+    list.innerHTML = '<div class="news-offline">Could not load news feed.</div>';
+    return;
+  }
+
+  // Sanitize a string for safe innerHTML insertion — prevents XSS from RSS data
+  function sanitizeText(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  list.innerHTML = items.map(item => {
+    const d = new Date(item.date);
+    const dateStr   = isNaN(d) ? '' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const safeTitle = sanitizeText(item.title);
+    const safeDesc  = item.description ? sanitizeText(item.description) : '';
+    // Only allow http/https links — strip anything else (javascript:, data:, etc.)
+    const safeLink  = /^https?:\/\//i.test(item.link || '') ? item.link : '#';
+    const safeImg   = /^https?:\/\//i.test(item.image || '') ? item.image : null;
+    const imgHtml = safeImg
+      ? `<div class="news-card-img"><img src="${safeImg}" alt="" loading="lazy"></div>`
+      : `<div class="news-card-img news-card-img--placeholder"><span>📰</span></div>`;
+    return `
+    <a class="news-item" href="${safeLink}" target="_blank" rel="noopener noreferrer">
+      ${imgHtml}
+      <div class="news-card-body">
+        ${dateStr ? `<div class="news-date">${dateStr}</div>` : ''}
+        <div class="news-title">${safeTitle}</div>
+        ${safeDesc ? `<div class="news-desc">${safeDesc}</div>` : ''}
+      </div>
+    </a>`;
+  }).join('');
+})();
+</script>
+</body>
+</html>

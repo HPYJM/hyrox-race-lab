@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HYROX Season 10 events calendar — browse all 60+ races, filter by status, view venue maps and wave times.">
+  <title>HYROX Events — Season 10</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* ─── EVENTS PAGE ──────────────────────────────────────────────────────── */
+    .events-main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 36px 80px;
+    }
+    .events-page-head {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .events-page-head h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+    .events-page-sub {
+      font-size: .8rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    /* Season switcher */
+    .season-switcher {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      padding: 4px;
+      width: fit-content;
+    }
+    .season-btn {
+      padding: 6px 18px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,.45);
+      font-size: .75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .season-btn:hover { color: var(--text); background: rgba(255,255,255,.06); }
+    .season-btn.active {
+      background: rgba(255,229,0,.1);
+      color: #ffe500;
+      box-shadow: 0 0 0 1.5px rgba(255,229,0,.65), 0 2px 10px rgba(255,229,0,.18);
+      transform: scale(1.04);
+    }
+    .season-btn.active.champ { color: #fbbf24; box-shadow: 0 0 0 1.5px rgba(251,191,36,.65), 0 2px 10px rgba(251,191,36,.18); }
+    .season-years {
+      font-size: .62rem;
+      color: rgba(255,255,255,.3);
+      font-weight: 400;
+      display: block;
+      margin-top: 1px;
+    }
+
+    /* Filter tabs */
+    .events-filter {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .ev-filter-btn {
+      padding: 5px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: .75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .ev-filter-btn:hover { border-color: rgba(96,165,250,.4); color: var(--text); }
+    .ev-filter-btn.active {
+      background: rgba(96,165,250,.15);
+      border-color: rgba(96,165,250,.5);
+      color: #60a5fa;
+    }
+
+    /* ── View toggle ── */
+    .view-toggle {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px;
+      padding: 3px;
+    }
+    .view-toggle-btn {
+      padding: 5px 12px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,.4);
+      font-size: .72rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .view-toggle-btn:hover { color: var(--text); }
+    .view-toggle-btn.active {
+      background: rgba(96,165,250,.18);
+      color: #60a5fa;
+    }
+
+    /* Card grid */
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .events-grid.hidden { display: none; }
+
+    /* ── Timeline view ── */
+    .events-timeline-wrap {
+      position: relative;
+      overflow: hidden;
+      display: none;
+      cursor: grab;
+      user-select: none;
+      min-height: 480px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.015);
+      border: 1px solid rgba(255,255,255,.07);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .events-timeline-wrap.active { display: block; }
+    .events-timeline-wrap.grabbing { cursor: grabbing; }
+
+    /* fade edges */
+    .events-timeline-wrap::before,
+    .events-timeline-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 80px;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .events-timeline-wrap::before { left: 0; background: linear-gradient(to right, #0b0b0f 0%, transparent 100%); }
+    .events-timeline-wrap::after  { right: 0; background: linear-gradient(to left,  #0b0b0f 0%, transparent 100%); }
+
+    .events-timeline {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      padding: 0 100px;
+      min-height: 480px;
+      position: relative;
+      will-change: transform;
+    }
+
+    /* central rail */
+    .tl-rail {
+      position: absolute;
+      left: 0; right: 0;
+      top: 50%;
+      height: 2px;
+      background: rgba(255,255,255,.1);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* today marker */
+    .tl-today {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: rgba(255,229,0,.7);
+      z-index: 5;
+      pointer-events: none;
+    }
+    .tl-today::after {
+      content: 'TODAY';
+      position: absolute;
+      bottom: calc(50% + 10px);
+      left: 5px;
+      font-size: .52rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      color: rgba(255,229,0,.75);
+      background: rgba(11,11,15,.8);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* month label below rail */
+    .tl-month-label {
+      position: absolute;
+      top: calc(50% + 12px);
+      transform: translateX(-50%);
+      font-size: .55rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      color: rgba(255,255,255,.18);
+      text-transform: uppercase;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* event node */
+    .tl-node {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      z-index: 4;
+    }
+    .tl-node.above { bottom: calc(50% - 6px); flex-direction: column; }
+    .tl-node.below { top: calc(50% - 6px); flex-direction: column-reverse; }
+
+    .tl-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.3);
+      background: #0d1117;
+      flex-shrink: 0;
+      transition: transform .15s, border-color .15s, box-shadow .15s;
+      z-index: 2;
+    }
+    .tl-node:hover .tl-dot { transform: scale(1.4); }
+    .tl-node.past .tl-dot   { border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.04); }
+    .tl-node.upcoming .tl-dot { border-color: rgba(96,165,250,.8); box-shadow: 0 0 6px rgba(96,165,250,.35); }
+    .tl-node.champ .tl-dot  { border-color: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,.4); }
+
+    .tl-stem {
+      width: 1px;
+      background: rgba(255,255,255,.12);
+      flex-shrink: 0;
+    }
+    .tl-node.upcoming .tl-stem { background: rgba(96,165,250,.3); }
+    .tl-node.past .tl-stem  { background: rgba(255,255,255,.07); }
+    .tl-node.champ .tl-stem { background: rgba(245,158,11,.35); }
+    .tl-node.above .tl-stem { height: 44px; }
+    .tl-node.below .tl-stem { height: 44px; }
+
+    .tl-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 10px;
+      padding: 9px 11px 8px;
+      width: 148px;
+      text-align: center;
+      transition: background .15s, transform .15s, border-color .15s, box-shadow .15s;
+      flex-shrink: 0;
+      overflow: hidden;
+      position: relative;
+      backdrop-filter: blur(4px);
+    }
+    .tl-node:hover .tl-card {
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.22);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    }
+    .tl-node.upcoming .tl-card  { border-color: rgba(96,165,250,.25); }
+    .tl-node.upcoming:hover .tl-card { background: rgba(96,165,250,.1); border-color: rgba(96,165,250,.5); }
+    .tl-node.past .tl-card { opacity: .45; }
+    .tl-node.champ .tl-card {
+      border-color: rgba(245,158,11,.5);
+      background: rgba(245,158,11,.06);
+    }
+    .tl-node.champ:hover .tl-card { background: rgba(245,158,11,.14); border-color: rgba(245,158,11,.7); }
+
+    .tl-card-img {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: .22;
+      border-radius: 9px;
+    }
+    .tl-node.past .tl-card-img { filter: grayscale(1); opacity: .08; }
+
+    .tl-flag  { font-size: 1rem; line-height: 1; position: relative; z-index: 1; }
+    .tl-city  {
+      font-size: .7rem;
+      font-weight: 800;
+      color: #e2e8f0;
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      position: relative; z-index: 1;
+      line-height: 1.2;
+    }
+    .tl-node.champ .tl-city { color: #fbbf24; }
+    .tl-date  {
+      font-size: .56rem;
+      color: rgba(255,255,255,.35);
+      margin-top: 2px;
+      position: relative; z-index: 1;
+    }
+    .tl-waves-badge {
+      font-size: .5rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-top: 4px;
+      display: inline-block;
+      position: relative; z-index: 1;
+      background: rgba(59,130,246,.25);
+      color: #93c5fd;
+      border: 1px solid rgba(96,165,250,.3);
+    }
+    .tl-tickets-badge {
+      font-size: .5rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-top: 3px;
+      display: inline-block;
+      position: relative; z-index: 1;
+      background: rgba(255,229,0,.18);
+      color: #ffe500;
+      border: 1px solid rgba(255,229,0,.38);
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .tl-tickets-badge:hover { background: rgba(255,229,0,.30); }
+
+    /* season background bands */
+    .tl-season-bg {
+      position: absolute;
+      top: 4px; bottom: 4px;
+      z-index: 0;
+      pointer-events: none;
+      border-radius: 10px;
+    }
+    /* season label — sits below the rail */
+    .tl-season-banner {
+      position: absolute;
+      bottom: 16px;
+      transform: translateX(-50%);
+      font-size: .58rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 3px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+      z-index: 5;
+      pointer-events: none;
+      opacity: .85;
+    }
+    .tl-season-divider {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 1px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* scroll hint */
+    .tl-scroll-hint {
+      text-align: center;
+      font-size: .65rem;
+      color: rgba(255,255,255,.25);
+      margin-top: 10px;
+    }
+
+    /* ── Photo-style card (HYROX original) ── */
+    .ev-card {
+      position: relative;
+      height: 300px;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      transition: transform .18s, box-shadow .18s;
+      background: #111;
+    }
+    .ev-card.no-click { cursor: default; }
+    .ev-card.no-click:hover .ev-card-img { transform: none; }
+    .ev-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0,0,0,.7);
+    }
+    .ev-card:focus-visible { outline: 2px solid #60a5fa; outline-offset: 3px; }
+
+    /* City photo */
+    .ev-card-img {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+      transition: transform .35s;
+    }
+    .ev-card:hover .ev-card-img { transform: scale(1.04); }
+
+    /* Grayscale for past; colour for upcoming/championship */
+    .ev-card.past .ev-card-img { filter: grayscale(1) brightness(.75); }
+    .ev-card.upcoming .ev-card-img { filter: grayscale(.4) brightness(.8); }
+    .ev-card.championship .ev-card-img { filter: grayscale(.1) brightness(.75); }
+
+    /* Dark gradient overlay (bottom 60%) */
+    .ev-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom,
+        transparent 20%,
+        rgba(0,0,0,.18) 45%,
+        rgba(0,0,0,.82) 72%,
+        rgba(0,0,0,.95) 100%);
+      pointer-events: none;
+    }
+
+    /* Championship gold top bar */
+    .ev-card.championship::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      z-index: 10;
+    }
+
+    /* IATA code top-left */
+    .ev-iata {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      color: rgba(255,255,255,.75);
+      z-index: 5;
+      font-family: monospace;
+    }
+
+    /* Top-right badge row */
+    .ev-top-badges {
+      position: absolute;
+      top: 11px;
+      right: 12px;
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      z-index: 5;
+    }
+
+    /* Status badge top-right */
+    .ev-status-badge {
+      font-size: .6rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      padding: 3px 9px;
+      border-radius: 10px;
+      text-transform: uppercase;
+    }
+    .ev-status-badge.past        { background: rgba(255,255,255,.12); color: rgba(255,255,255,.65); }
+    .ev-status-badge.upcoming    { background: rgba(59,130,246,.35); color: #93c5fd; border: 1px solid rgba(96,165,250,.4); }
+    .ev-status-badge.live        { background: rgba(34,197,94,.35); color: #4ade80; animation: pulse-badge 1.5s infinite; }
+    .ev-status-badge.championship{ background: rgba(245,158,11,.3); color: #fbbf24; border: 1px solid rgba(245,158,11,.4); }
+    @keyframes pulse-badge { 0%,100%{opacity:1} 50%{opacity:.55} }
+
+    /* Content (over gradient) */
+    .ev-card-content {
+      position: relative;
+      z-index: 5;
+      padding: 0 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .ev-city-name {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #ffe500;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      line-height: 1.1;
+      text-shadow: 0 2px 8px rgba(0,0,0,.8);
+    }
+    .ev-card.championship .ev-city-name { color: #fbbf24; }
+    .ev-venue-name {
+      font-size: .7rem;
+      color: rgba(255,255,255,.6);
+      margin-bottom: 4px;
+    }
+    .ev-date-row {
+      font-size: .78rem;
+      color: rgba(255,255,255,.9);
+      font-weight: 600;
+    }
+
+    /* Countdown strip */
+    .ev-countdown {
+      margin-top: 6px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .ev-cd-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(0,0,0,.5);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 5px;
+      padding: 3px 7px;
+      min-width: 36px;
+    }
+    .ev-cd-num {
+      font-size: .85rem;
+      font-weight: 800;
+      color: #ffe500;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .ev-cd-label {
+      font-size: .5rem;
+      color: rgba(255,255,255,.55);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .ev-cd-sep { color: rgba(255,255,255,.4); font-size: .7rem; margin-bottom: 6px; }
+    .ev-countdown-done {
+      font-size: .7rem;
+      color: #4ade80;
+      font-weight: 700;
+      background: rgba(34,197,94,.15);
+      border: 1px solid rgba(34,197,94,.3);
+      border-radius: 5px;
+      padding: 4px 10px;
+    }
+
+    /* Tickets on-sale tag (card view — sits left of status badge) */
+    .ev-tickets-tag {
+      font-size: .6rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      padding: 3px 8px;
+      border-radius: 10px;
+      background: rgba(255,229,0,.14);
+      color: #ffe500;
+      border: 1px solid rgba(255,229,0,.4);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: background .15s;
+      white-space: nowrap;
+    }
+    .ev-tickets-tag:hover { background: rgba(255,229,0,.26); }
+
+    /* Map badge */
+    .ev-map-badge {
+      position: absolute;
+      bottom: 14px;
+      right: 12px;
+      font-size: .6rem;
+      font-weight: 700;
+      background: rgba(251,191,36,.15);
+      color: #fbbf24;
+      border: 1px solid rgba(251,191,36,.3);
+      border-radius: 8px;
+      padding: 2px 7px;
+      z-index: 6;
+    }
+
+    /* ─── MODAL ────────────────────────────────────────────────────────────── */
+    .ev-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.8);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+    }
+    .ev-modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .ev-modal {
+      background: #0f0f13;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 820px;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 32px 80px rgba(0,0,0,.8);
+      transform: translateY(24px) scale(.96);
+      transition: transform .25s cubic-bezier(.22,.68,0,1.2);
+    }
+    .ev-modal-overlay.open .ev-modal { transform: translateY(0) scale(1); }
+
+    /* ── Hero banner (photo + city name) ── */
+    .ev-modal-hero {
+      position: relative;
+      height: 190px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .ev-modal-hero-img {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center 30%;
+      transition: transform .4s;
+    }
+    .ev-modal:hover .ev-modal-hero-img { transform: scale(1.03); }
+    .ev-modal-hero.past   .ev-modal-hero-img { filter: grayscale(1) brightness(.7); }
+    .ev-modal-hero.upcoming .ev-modal-hero-img { filter: grayscale(.3) brightness(.75); }
+    .ev-modal-hero.championship .ev-modal-hero-img { filter: brightness(.72); }
+
+    /* gradient: clear top, dark bottom */
+    .ev-modal-hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,.25) 0%, rgba(0,0,0,.88) 100%);
+      pointer-events: none;
+    }
+
+    /* championship gold top accent */
+    .ev-modal-hero.championship::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      z-index: 10;
+    }
+
+    /* Close button (top-right in hero) */
+    .ev-modal-close {
+      position: absolute;
+      top: 14px; right: 14px;
+      z-index: 20;
+      background: rgba(0,0,0,.55);
+      border: 1px solid rgba(255,255,255,.18);
+      color: #fff;
+      border-radius: 50%;
+      width: 32px; height: 32px;
+      font-size: .85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s, transform .15s;
+      backdrop-filter: blur(4px);
+    }
+    .ev-modal-close:hover { background: rgba(0,0,0,.8); transform: scale(1.1); }
+
+    /* IATA badge (hero top-left) */
+    .ev-modal-iata {
+      position: absolute;
+      top: 14px; left: 16px;
+      z-index: 20;
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      color: rgba(255,255,255,.65);
+      font-family: monospace;
+    }
+
+    /* Hero content (bottom of photo) */
+    .ev-modal-hero-content {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      z-index: 10;
+      padding: 0 22px 16px;
+    }
+    .ev-modal-hero-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .ev-modal-status-badge {
+      font-size: .58rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      padding: 3px 9px;
+      border-radius: 10px;
+      text-transform: uppercase;
+    }
+    .ev-modal-status-badge.past        { background: rgba(255,255,255,.12); color: rgba(255,255,255,.6); }
+    .ev-modal-status-badge.upcoming    { background: rgba(59,130,246,.35); color: #93c5fd; border: 1px solid rgba(96,165,250,.4); }
+    .ev-modal-status-badge.live        { background: rgba(34,197,94,.35); color: #4ade80; }
+    .ev-modal-status-badge.championship{ background: rgba(245,158,11,.3); color: #fbbf24; border: 1px solid rgba(245,158,11,.4); }
+    .ev-modal-ext {
+      font-size: .68rem;
+      color: rgba(255,255,255,.65);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: color .15s;
+    }
+    .ev-modal-ext:hover { color: #fff; }
+
+    .ev-modal-hero-flag-city {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .ev-modal-flag { font-size: 1.6rem; line-height: 1; }
+    .ev-modal-city {
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: #ffe500;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      text-shadow: 0 2px 10px rgba(0,0,0,.8);
+      line-height: 1;
+    }
+    .ev-modal-hero.championship .ev-modal-city { color: #fbbf24; }
+    .ev-modal-meta {
+      font-size: .74rem;
+      color: rgba(255,255,255,.65);
+      margin-top: 4px;
+    }
+
+    /* ── Body (map + waves) ── */
+    .ev-modal-body {
+      overflow-y: auto;
+      padding: 20px 22px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .ev-modal-content {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 14px;
+      align-items: start;
+    }
+
+    /* Map panel */
+    .ev-modal-map-panel { display: flex; flex-direction: column; gap: 8px; }
+    .ev-modal-section-title {
+      font-size: .62rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.35);
+      margin: 0;
+    }
+    .ev-modal-map {
+      width: 100%;
+      aspect-ratio: 4/3;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .ev-modal-map img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .ev-modal-map-none {
+      font-size: .78rem;
+      color: rgba(255,255,255,.35);
+      text-align: center;
+      padding: 24px;
+      line-height: 1.6;
+    }
+    .ev-modal-map-none .map-icon { font-size: 2.2rem; display: block; margin-bottom: 10px; opacity: .3; }
+    .ev-modal-map-pdf-link {
+      font-size: .72rem; color: #60a5fa; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 4px; margin-top: 6px;
+    }
+    .ev-modal-map-pdf-link:hover { text-decoration: underline; }
+
+    /* Waves panel */
+    .ev-waves-panel { display: flex; flex-direction: column; gap: 8px; }
+    .ev-waves {
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255,255,255,.03);
+    }
+    .ev-wave-day-header {
+      padding: 7px 14px;
+      font-size: .6rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.35);
+      background: rgba(255,255,255,.05);
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .ev-wave-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      transition: background .1s;
+    }
+    .ev-wave-row:last-child { border-bottom: none; }
+    .ev-wave-row:hover { background: rgba(255,255,255,.04); }
+    .ev-wave-row > div { padding: 8px 14px; font-size: .74rem; }
+    .ev-wave-cat { color: rgba(255,255,255,.8); }
+    .ev-wave-time {
+      color: #ffe500;
+      font-weight: 700;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      font-size: .78rem;
+    }
+    .ev-waves-unconfirmed {
+      font-size: .68rem; color: #f59e0b;
+      padding: 5px 10px;
+      background: rgba(245,158,11,.08);
+      border: 1px solid rgba(245,158,11,.2);
+      border-radius: 8px;
+    }
+    .ev-waves-unconfirmed a { color: #fbbf24; }
+
+    /* Legacy .ev-status used in renderGrid badge - keep */
+    .ev-status {
+      font-size: .62rem; font-weight: 700; letter-spacing: .08em;
+      padding: 3px 8px; border-radius: 10px; text-transform: uppercase;
+    }
+    .ev-status.past        { background: rgba(255,255,255,.06); color: var(--muted); }
+    .ev-status.upcoming    { background: rgba(59,130,246,.18); color: #60a5fa; }
+    .ev-status.live        { background: rgba(34,197,94,.18); color: #4ade80; }
+    .ev-status.championship{ background: rgba(245,158,11,.18); color: #fbbf24; }
+
+    @media (max-width: 640px) {
+      .ev-modal-content { grid-template-columns: 1fr; }
+      .ev-modal-hero { height: 160px; }
+      .events-grid { grid-template-columns: 1fr 1fr; }
+      .ev-card { height: 220px; }
+    }
+    @media (max-width: 420px) {
+      .events-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── PAGE TITLE BAR ────────────────────────────────────────────────────── -->
+<div class="page-title-bar">
+  <div class="page-title-left">
+    <h1>HYROX Events</h1>
+    <p class="subtitle">Season 10 · 2026–27 · 60+ events worldwide</p>
+  </div>
+  <nav class="title-nav">
+    <a class="title-nav-link title-nav-analysis" href="index.html">📊 Race Lab</a>
+    <a class="title-nav-link title-nav-events active" href="events.html">📅 Events</a>
+    <a class="title-nav-link title-nav-news" href="news.html">📰 News</a>
+  </nav>
+</div>
+
+<!-- ── NEWS TICKER ───────────────────────────────────────────────────────── -->
+<div class="ticker-bar">
+  <span class="ticker-label">LIVE</span>
+  <div class="ticker-track-wrap">
+    <div class="ticker-track" id="tickerTrack">
+      <span class="ticker-item">🏆 World Champs Stockholm — Jun 18–21 · Elite 15 + Pro categories</span>
+      <span class="ticker-item">🏅 World Record broken at Berlin 2026 — Mixed Doubles</span>
+      <span class="ticker-item">🎟 London Olympia 2026 — EMEA Regional Championships</span>
+      <span class="ticker-item">📣 HYROX Season 10 · 60 events · Jun – Dec 2026</span>
+      <span class="ticker-item">🏃 Istanbul · Bangkok · Cape Town — tickets on sale now</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── EVENTS PAGE ────────────────────────────────────────────────────────── -->
+<main class="events-main">
+  <div class="events-page-head">
+    <h2 id="evSeasonTitle">📅&nbsp; Season 9 Events</h2>
+    <p class="events-page-sub" id="evSeasonSub">2025 – 2026 · Click any event for venue map &amp; wave times</p>
+  </div>
+
+  <div class="season-switcher" id="seasonSwitcher">
+    <button class="season-btn active" data-season="10">
+      Season 10 <span class="season-years">2026 – 27</span>
+    </button>
+    <button class="season-btn" data-season="9">
+      Season 9 <span class="season-years">2025 – 26</span>
+    </button>
+    <button class="season-btn" data-season="8">
+      Season 8 <span class="season-years">2024 – 25</span>
+    </button>
+    <button class="season-btn" data-season="7">
+      Season 7 <span class="season-years">2023 – 24</span>
+    </button>
+  </div>
+
+  <div class="events-filter" id="eventsFilter">
+    <button class="ev-filter-btn active" data-filter="all">All</button>
+    <button class="ev-filter-btn" data-filter="upcoming">Upcoming</button>
+    <button class="ev-filter-btn" data-filter="past">Past</button>
+    <div class="view-toggle" id="viewToggle">
+      <button class="view-toggle-btn active" data-view="cards" title="Card view">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="0" width="6" height="6" rx="1.5"/><rect x="8" y="0" width="6" height="6" rx="1.5"/><rect x="0" y="8" width="6" height="6" rx="1.5"/><rect x="8" y="8" width="6" height="6" rx="1.5"/></svg>
+        Cards
+      </button>
+      <button class="view-toggle-btn" data-view="timeline" title="Timeline view">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="0" y1="7" x2="14" y2="7"/><circle cx="3" cy="7" r="1.8" fill="currentColor" stroke="none"/><circle cx="7" cy="7" r="1.8" fill="currentColor" stroke="none"/><circle cx="11" cy="7" r="1.8" fill="currentColor" stroke="none"/><line x1="3" y1="7" x2="3" y2="3"/><line x1="7" y1="7" x2="7" y2="10"/><line x1="11" y1="7" x2="11" y2="3"/></svg>
+        Timeline
+      </button>
+    </div>
+  </div>
+
+  <div class="events-grid" id="eventsGrid"></div>
+
+  <div class="events-timeline-wrap" id="eventsTimelineWrap">
+    <div class="events-timeline" id="eventsTimeline"></div>
+  </div>
+  <p class="tl-scroll-hint" id="tlScrollHint" style="display:none">Scroll ↔ to navigate · Click any event to open</p>
+</main>
+
+<!-- ── EVENT MODAL ────────────────────────────────────────────────────────── -->
+<div class="ev-modal-overlay" id="evModalOverlay">
+  <div class="ev-modal" id="evModal">
+
+    <!-- Hero: city photo + city name -->
+    <div class="ev-modal-hero" id="evModalHero">
+      <div class="ev-modal-hero-img" id="evModalHeroImg"></div>
+      <span class="ev-modal-iata" id="evModalIata"></span>
+      <button class="ev-modal-close" id="evModalClose" aria-label="Close">✕</button>
+      <div class="ev-modal-hero-content">
+        <div class="ev-modal-hero-badges">
+          <span class="ev-modal-status-badge" id="evModalStatusBadge"></span>
+          <a class="ev-modal-ext" id="evModalExtLink" href="#" target="_blank" rel="noopener noreferrer">
+            Official page
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 2h6v6M2 8l6-6"/></svg>
+          </a>
+        </div>
+        <div class="ev-modal-hero-flag-city">
+          <span class="ev-modal-flag" id="evModalFlag"></span>
+          <span class="ev-modal-city" id="evModalCity"></span>
+        </div>
+        <div class="ev-modal-meta" id="evModalMeta"></div>
+      </div>
+    </div>
+
+    <!-- Body: map + waves -->
+    <div class="ev-modal-body">
+      <div class="ev-modal-content">
+        <div class="ev-modal-map-panel">
+          <p class="ev-modal-section-title">Venue Map</p>
+          <div class="ev-modal-map" id="evModalMap"></div>
+        </div>
+        <div class="ev-waves-panel">
+          <p class="ev-modal-section-title">Wave Start Times</p>
+          <div class="ev-waves" id="evModalWaves"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/events-data.js"></script>
+<script src="js/fetcher.js"></script>
+<script>
+(function () {
+  // Ticker — endless RAF scroll, no CSS animation restart
+  (function () {
+    const track = document.getElementById('tickerTrack');
+    if (!track) return;
+    track.innerHTML += track.innerHTML;
+    let pos = 0;
+    function tick() {
+      pos += 0.5;
+      if (pos >= track.scrollWidth / 2) pos -= track.scrollWidth / 2;
+      track.style.transform = 'translateX(' + (-pos) + 'px)';
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  // ── City image map — keyed by city name (shared across all seasons) ────────
+  const CITY_IMG_BY_CITY = {
+    'Hamburg':         'https://hyrox.com/wp-content/uploads/2026/06/AdobeStock_152735034-scaled-3-1280x720.png',
+    'Manchester':      'https://hyrox.com/wp-content/uploads/2026/06/Manchester-BW-2-scaled-2-1280x800.jpg',
+    'Edinburgh':       'https://hyrox.com/wp-content/uploads/2025/07/the-boston-skyline-boston-ma-full-zakim-black-and-white-toby-mcguire-768x512-1.jpg',
+    'Milan':           'https://hyrox.com/wp-content/uploads/2024/06/Naviglio-1280x720.jpg',
+    'Singapore':       'https://hyrox.com/wp-content/uploads/2026/06/singapore-scaled-4-1280x720.jpg',
+    'Frankfurt':       'https://hyrox.com/wp-content/uploads/2026/05/FFM-event-page-scaled-2-960x960.png',
+    'Dubai':           'https://hyrox.com/wp-content/uploads/2026/03/1500x1000_abudhabi-1280x853.jpg',
+    'Melbourne':       'https://hyrox.com/wp-content/uploads/2026/05/Melbourne-scaled-1-1280x720.jpg',
+    'Berlin':          'https://hyrox.com/wp-content/uploads/2025/03/pexels-photo-13103362-1280x853.jpeg',
+    'Madrid':          'https://hyrox.com/wp-content/uploads/2023/05/Valencia.jpg',
+    'Sydney':          'https://hyrox.com/wp-content/uploads/2026/06/Sydney-scaled-2-1280x720.jpg',
+    'Riga':            'https://hyrox.com/wp-content/uploads/2026/05/168fb1cd-aea3-4fbb-a300-3a0b3a76dafe-scaled-2-1280x960.jpg',
+    'London':          'https://hyrox.com/wp-content/uploads/2026/06/Olympia-scaled-1-1280x780.jpg',
+    'Chicago':         'https://hyrox.com/wp-content/uploads/2023/10/OPEN.-US-CHAMPS-EVENT-IMAGE-1-1280x853.jpg',
+    'Toronto':         'https://hyrox.com/wp-content/uploads/2024/02/HYROX-TORONTO-1280x854.jpg',
+    'Buenos Aires':    'https://hyrox.com/wp-content/uploads/2025/07/15946147-8add-4609-beb3-44b3e2842715-1280x850.jpg',
+    'Stockholm':       'https://hyrox.com/wp-content/uploads/2026/06/7R34835-scaled-3-1280x854.jpg',
+    'Nice':            'https://hyrox.com/wp-content/uploads/2026/05/vue-de-nice-1-scaled-2-1280x720.jpg',
+    'Jakarta':         'https://hyrox.com/wp-content/uploads/2026/06/Jakarta-NationalMonument_Mono-scaled-4-1280x800.jpg',
+    'Hangzhou':        'https://hyrox.com/wp-content/uploads/2026/03/hangzhou_banner-1.jpg',
+    'Abu Dhabi':       'https://hyrox.com/wp-content/uploads/2026/03/1500x1000_abudhabi-1280x853.jpg',
+    'Delhi':           'https://hyrox.com/wp-content/uploads/2025/05/Delhi_Find-my-race--1280x819.jpg',
+    'Istanbul':        'https://hyrox.com/wp-content/uploads/2026/03/istanbul_photo_high-scaled-e1772783750540-1280x853.jpg',
+    'Bangkok':         'https://hyrox.com/wp-content/uploads/2025/07/BKK-Event-Page-Featured-Image-1-1280x720.jpg',
+    'Cape Town':       'https://hyrox.com/wp-content/uploads/2026/01/WhatsApp-Image-2026-01-27-at-15.49.28-1280x850.jpeg',
+    'Perth':           'https://hyrox.com/wp-content/uploads/2026/06/perth-scaled-1-1280x720.jpg',
+    'Washington D.C.': 'https://hyrox.com/wp-content/uploads/2023/10/OPEN.-US-CHAMPS-EVENT-IMAGE-1-1280x853.jpg',
+    'Tenerife':        'https://hyrox.com/wp-content/uploads/2026/05/photo-1602521715918-e50cc83f7326-copia_1-scaled-2-768x960.jpg',
+    'Acapulco':        'https://hyrox.com/wp-content/uploads/2025/05/Acapulco-1280x719.jpg',
+    'Athens':          'https://hyrox.com/wp-content/uploads/2026/03/1500x1000_atina_2-1280x853.jpg',
+    'Maastricht':      'https://hyrox.com/wp-content/uploads/2023/07/Maastricht-Zwart-Wit.png',
+    'Salt Lake City':  'https://hyrox.com/wp-content/uploads/2026/06/SALT_LAKE_CITY_original_963846-1-scaled-1-1280x852.jpg',
+    'İzmir':           'https://hyrox.com/wp-content/uploads/2026/05/1500x1000_izmir-1280x853.jpg',
+    'Rome':            'https://hyrox.com/wp-content/uploads/2025/03/pexels-photo-13103362-1280x853.jpeg',
+    'Oslo':            'https://hyrox.com/wp-content/uploads/2026/05/168fb1cd-aea3-4fbb-a300-3a0b3a76dafe-scaled-2-1280x960.jpg',
+    'Bordeaux':        'https://hyrox.com/wp-content/uploads/2026/06/ChatGPT-Image-26-fevr.-2026-18_47_47-scaled-1-1280x853.png',
+    'Karlsruhe':       'https://hyrox.com/wp-content/uploads/2026/05/Karslruhe_Event-Page-scaled-2-1280x853.png',
+    'Boston':          'https://hyrox.com/wp-content/uploads/2025/07/the-boston-skyline-boston-ma-full-zakim-black-and-white-toby-mcguire-768x512-1.jpg',
+    'Geneva':          'https://hyrox.com/wp-content/uploads/2026/06/Geneva_Event-Page-scaled-1-1280x853.png',
+    'Gdańsk':          'https://hyrox.com/wp-content/uploads/2026/06/gdansk-sales-scaled-1-1280x854.jpg',
+    'Valencia':        'https://hyrox.com/wp-content/uploads/2023/05/Valencia.jpg',
+    'São Paulo':       'https://hyrox.com/wp-content/uploads/2026/03/Imagem-2-1274x960.jpg',
+    'Tampa':           'https://hyrox.com/wp-content/uploads/2026/06/Tampa_Skyline_At_Tampa_In_Florida_United_States._original_3228851-scaled-1-1280x720.jpg',
+    'Birmingham':      'https://hyrox.com/wp-content/uploads/2026/06/Birmingham-scaled-1-1280x852.jpg',
+    'Mexico City':     'https://hyrox.com/wp-content/uploads/2026/06/Mexico-City-scaled-1-1280x896.jpg',
+    'Dublin':          'https://hyrox.com/wp-content/uploads/2026/06/Dublin-scaled-1-1280x852.jpg',
+    'Düsseldorf':      'https://hyrox.com/wp-content/uploads/2026/06/Dusseldorf-Event-Page-scaled-1-1280x852.png',
+    'Barcelona':       'https://hyrox.com/wp-content/uploads/2024/09/Captura-de-pantalla-2024-09-11-a-las-16.10.04.png',
+    'Denver':          'https://hyrox.com/wp-content/uploads/2026/06/Denver__Colorado_original_343234-scaled-1-1280x855.jpg',
+    'Seoul':           'https://hyrox.com/wp-content/uploads/2026/06/seoul-scaled-1-1280x720.jpg',
+    'Dallas':          'https://hyrox.com/wp-content/uploads/2023/05/DALLAS-1280x854.jpg',
+    'Poznań':          'https://hyrox.com/wp-content/uploads/2026/06/hyrox-poznan2-scaled-1-1280x720.png',
+    'Rio de Janeiro':  'https://hyrox.com/wp-content/uploads/2025/03/Rio-de-Janeiro.jpg',
+    'Utrecht':         'https://hyrox.com/wp-content/uploads/2026/06/Utrecht-scaled-2-1280x854.jpg',
+    'Johannesburg':    'https://hyrox.com/wp-content/uploads/2026/06/south-africa-tourism-johannesburg-1_square-scaled-1-960x960.jpg',
+    'Anaheim':         'https://hyrox.com/wp-content/uploads/2023/10/HYROX-ANAHEIM-23_24-EVENT-IMAGE-1-1-1280x719.jpg',
+    'Sanya':           'https://hyrox.com/wp-content/uploads/2026/06/sanya-city-scaled-1-1280x853.jpg',
+    'Nashville':       'https://hyrox.com/wp-content/uploads/2026/05/chad-morehead-AHnmupFDWCc-unsplash-scaled-1-1280x855.jpg',
+    'Paris':           'https://hyrox.com/wp-content/uploads/2023/10/Paris-1-1280x853.jpg',
+    'Gent':            'https://hyrox.com/wp-content/uploads/2026/05/shutterstock_gent_kleiner-scaled-1-1280x854.jpg',
+    'Helsinki':        'https://hyrox.com/wp-content/uploads/2025/07/hyrox-helsinki-1280x720.png',
+    'Vancouver':       'https://hyrox.com/wp-content/uploads/2026/05/58beed79-5bc1-4beb-9b8a-644f93a69458-scaled-1-1280x717.jpg',
+    'Chiba':           'https://hyrox.com/wp-content/uploads/2026/06/JP-CHIBA-BW-featured-image-scaled-1-1280x720.jpg',
+    'Chengdu':         'https://hyrox.com/wp-content/uploads/2026/06/cd-scaled-1-1280x853.jpg',
+    'Shenzhen':        'https://hyrox.com/wp-content/uploads/2026/06/深圳-1-scaled-1-1280x612.jpg',
+    'Guangzhou':       'https://hyrox.com/wp-content/uploads/2026/03/微信图片_20260312212210_661_70.jpg',
+    'Beijing':         'https://hyrox.com/wp-content/uploads/2026/03/微信图片_20260312222618_665_70.jpg',
+    'Shanghai':        'https://hyrox.com/wp-content/uploads/2026/03/微信图片_20260312213404_663_70.jpg',
+    'Mumbai':          'https://hyrox.com/wp-content/uploads/2026/03/Mumbai-image-1280x869.png',
+  };
+
+  // Per-id overrides still supported for S9 (keeps backwards compat)
+  const CITY_IMG_S9 = {
+    'hamburg-25':    CITY_IMG_BY_CITY['Hamburg'],
+    'manchester-25': CITY_IMG_BY_CITY['Manchester'],
+    'edinburgh-25':  CITY_IMG_BY_CITY['Edinburgh'],
+    'milan-25':      CITY_IMG_BY_CITY['Milan'],
+    'singapore-25':  CITY_IMG_BY_CITY['Singapore'],
+    'frankfurt-25':  CITY_IMG_BY_CITY['Frankfurt'],
+    'dubai-25':      CITY_IMG_BY_CITY['Dubai'],
+    'melbourne-25':  CITY_IMG_BY_CITY['Melbourne'],
+    'berlin-26':     CITY_IMG_BY_CITY['Berlin'],
+    'madrid-26':     CITY_IMG_BY_CITY['Madrid'],
+    'sydney-26':     CITY_IMG_BY_CITY['Sydney'],
+    'riga-26':       CITY_IMG_BY_CITY['Riga'],
+    'cologne-26':    CITY_IMG_BY_CITY['Cologne'],
+    'london-26':     CITY_IMG_BY_CITY['London'],
+    'chicago-26':    CITY_IMG_BY_CITY['Chicago'],
+    'toronto-26':    CITY_IMG_BY_CITY['Toronto'],
+    'new-york-26':   CITY_IMG_BY_CITY['New York'],
+    'buenos-aires-26': CITY_IMG_BY_CITY['Buenos Aires'],
+    'world-champs-26': CITY_IMG_BY_CITY['Stockholm'],
+  };
+
+  function cityImg(ev) {
+    return CITY_IMG_S9[ev.id] || CITY_IMG_BY_CITY[ev.city] || '';
+  }
+
+  // ── IATA codes (by city name) ──────────────────────────────────────────────
+  const IATA_BY_CITY = {
+    'Hamburg': 'HAM', 'Manchester': 'MAN', 'Edinburgh': 'EDI',
+    'Milan': 'MXP', 'Singapore': 'SIN', 'Frankfurt': 'FRA',
+    'Dubai': 'DXB', 'Melbourne': 'MEL', 'Berlin': 'BER',
+    'Madrid': 'MAD', 'Sydney': 'SYD', 'Riga': 'RIX',
+    'London': 'LHR', 'Chicago': 'ORD', 'Toronto': 'YYZ',
+    'Buenos Aires': 'EZE', 'Stockholm': 'ARN', 'Nice': 'NCE',
+    'Cologne': 'CGN', 'New York': 'JFK',
+    // S10
+    'Jakarta': 'JKT', 'Hangzhou': 'HGH', 'Abu Dhabi': 'AUH',
+    'Delhi': 'DEL', 'Chengdu': 'CTU', 'Istanbul': 'IST',
+    'Chiba': 'NRT', 'Bangkok': 'BKK', 'Cape Town': 'CPT',
+    'Shenzhen': 'SZX', 'Perth': 'PER', 'Washington D.C.': 'DCA',
+    'Tenerife': 'TFN', 'Acapulco': 'ACA', 'Athens': 'ATH',
+    'Beijing': 'PEK', 'Maastricht': 'MST', 'Mumbai': 'BOM',
+    'Salt Lake City': 'SLC', 'İzmir': 'ADB', 'Rome': 'FCO',
+    'Oslo': 'OSL', 'Bordeaux': 'BOD', 'Karlsruhe': 'KAR',
+    'Boston': 'BOS', 'Geneva': 'GVA', 'Gdańsk': 'GDN',
+    'Valencia': 'VLC', 'São Paulo': 'GRU', 'Tampa': 'TPA',
+    'Birmingham': 'BHX', 'Mexico City': 'MEX', 'Dublin': 'DUB',
+    'Düsseldorf': 'DUS', 'Barcelona': 'BCN', 'Denver': 'DEN',
+    'Seoul': 'ICN', 'Dallas': 'DFW', 'Poznań': 'POZ',
+    'Guangzhou': 'CAN', 'Rio de Janeiro': 'GIG', 'Utrecht': 'UTR',
+    'Johannesburg': 'JNB', 'Anaheim': 'SNA', 'Sanya': 'SYX',
+    'Nashville': 'BNA', 'Paris': 'CDG', 'Gent': 'GNT',
+    'Helsinki': 'HEL', 'Vancouver': 'YVR',
+  };
+
+  // ── Countdown helper ───────────────────────────────────────────────────────
+  function getCountdown(dateStr) {
+    const target = new Date(dateStr + 'T00:00:00');
+    const diff = target - new Date();
+    if (diff <= 0) return null;
+    return {
+      d: Math.floor(diff / 86400000),
+      h: Math.floor((diff % 86400000) / 3600000),
+      m: Math.floor((diff % 3600000) / 60000),
+    };
+  }
+
+  function cdHtml(dateStr) {
+    const cd = getCountdown(dateStr);
+    if (!cd) return '<span class="ev-countdown-done">🏁 Race day!</span>';
+    if (cd.d > 90) return `<span class="ev-countdown-done" style="background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.3);color:#60a5fa">${cd.d}d away</span>`;
+    return `
+      <div class="ev-cd-unit"><span class="ev-cd-num">${cd.d}</span><span class="ev-cd-label">days</span></div>
+      <span class="ev-cd-sep">:</span>
+      <div class="ev-cd-unit"><span class="ev-cd-num">${String(cd.h).padStart(2,'0')}</span><span class="ev-cd-label">hrs</span></div>
+      <span class="ev-cd-sep">:</span>
+      <div class="ev-cd-unit"><span class="ev-cd-num">${String(cd.m).padStart(2,'0')}</span><span class="ev-cd-label">min</span></div>`;
+  }
+
+  // ── State ─────────────────────────────────────────────────────────────────
+  const grid = document.getElementById('eventsGrid');
+  const tlWrap = document.getElementById('eventsTimelineWrap');
+  const tlContainer = document.getElementById('eventsTimeline');
+  const tlHint = document.getElementById('tlScrollHint');
+  let currentSeason = 10;
+  let currentFilter = 'all';
+  let currentView = 'cards';
+  let countdownInterval = null;
+
+  function activeSeason() { return HYROX_SEASONS[currentSeason]; }
+
+  function todayStatus(ev) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (ev.status === 'live') return 'live';
+    if (ev.date > today) return 'upcoming';
+    return 'past';
+  }
+
+  // Tickets on sale: explicit data field → heuristic (upcoming + venue confirmed)
+  // The live probe cannot work — hyrox.com is JS-rendered so raw HTML never
+  // contains the ticket button. Hide only when explicitly set false in data.
+  function isTicketsOnSale(ev) {
+    if (ev.ticketsOnSale !== undefined) return ev.ticketsOnSale === true;
+    return todayStatus(ev) === 'upcoming' && !!ev.venueUrl && ev.venue && ev.venue !== 'TBC';
+  }
+
+  // runTicketsProbe is a no-op — hyrox.com pages are JS-rendered so CORS
+  // proxy fetches only return a cookie consent wall, not ticket button text.
+  // Ticket visibility is controlled via the ticketsOnSale field in events-data.js.
+  function runTicketsProbe() {}
+
+  function renderGrid() {
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+
+    const season = activeSeason();
+    const events = season.events.filter(ev => {
+      const s = todayStatus(ev);
+      return currentFilter === 'all' || s === currentFilter;
+    });
+
+    if (!events.length) {
+      grid.innerHTML = '<p style="color:var(--muted);font-size:.85rem">No events match this filter.</p>';
+      return;
+    }
+
+    grid.innerHTML = events.map(ev => {
+      const s = todayStatus(ev);
+      const isChamp = ev.isChampionship;
+      const statusLabel = isChamp ? 'Championship' : s.charAt(0).toUpperCase() + s.slice(1);
+      const statusClass = isChamp ? 'championship' : s;
+      const img = cityImg(ev);
+      const iata = IATA_BY_CITY[ev.city] || '';
+      const hasMap = ev.mapImg || ev.mapImgDirect;
+      const isUpcoming = s === 'upcoming' || s === 'live';
+
+      const isPast = s === 'past';
+      const cardAttrs = isPast
+        ? `class="ev-card ${s}${isChamp ? ' championship' : ''} no-click" data-id="${ev.id}"`
+        : `class="ev-card ${s}${isChamp ? ' championship' : ''}" data-id="${ev.id}" role="button" tabindex="0" aria-label="${ev.city} ${ev.dateLabel}"`;
+      return `
+      <div ${cardAttrs}>
+        ${img ? `<div class="ev-card-img" style="background-image:url('${img}')"></div>` : ''}
+        ${iata ? `<span class="ev-iata">${iata}</span>` : ''}
+        <div class="ev-top-badges">
+          ${isUpcoming && isTicketsOnSale(ev) && ev.venueUrl ? `<a href="${ev.venueUrl}" class="ev-tickets-tag" target="_blank" rel="noopener" onclick="event.stopPropagation()">On Sale</a>` : ''}
+          <span class="ev-status-badge ${statusClass}">${statusLabel}</span>
+        </div>
+        ${hasMap ? '<span class="ev-map-badge">🗺 Map</span>' : ''}
+        <div class="ev-card-content">
+          <div class="ev-city-name">${isChamp ? '🏆 ' : ''}${ev.city}</div>
+          <div class="ev-venue-name">${ev.venue}</div>
+          <div class="ev-date-row">${ev.dateLabel}</div>
+          ${isUpcoming ? `<div class="ev-countdown" data-date="${ev.date}">${cdHtml(ev.date)}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    grid.querySelectorAll('.ev-card:not(.no-click)').forEach(card => {
+      card.addEventListener('click', () => openModal(card.dataset.id));
+      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(card.dataset.id); } });
+    });
+
+    const hasCd = events.some(ev => todayStatus(ev) === 'upcoming' || todayStatus(ev) === 'live');
+    if (hasCd) {
+      countdownInterval = setInterval(() => {
+        grid.querySelectorAll('.ev-countdown[data-date]').forEach(el => {
+          el.innerHTML = cdHtml(el.dataset.date);
+        });
+      }, 30000);
+    }
+  }
+
+  // ── Timeline render ────────────────────────────────────────────────────────
+  (function setupTimeline() {
+    const PX_PER_DAY = 26;   // horizontal scale
+    const STEM_H     = 48;   // px — half-height reserved for cards above/below rail
+    const CARD_W     = 150;
+    const MIN_GAP    = 16;   // min px gap between adjacent card left-edges
+
+    let tlOffset = 0;        // current (rendered) translateX scroll position
+    let tlTarget = 0;        // target scroll position (lerped toward)
+    let tlRafId = null;      // RAF handle for lerp loop
+    let tlMaxScroll = 0;
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartOffset = 0;
+
+    // Season colours: bg tint + banner accent per season
+    const SEASON_COLOURS = {
+      10: { bg: 'rgba(96,165,250,.06)',  border: 'rgba(96,165,250,.18)',  text: '#93c5fd', bannerBg: 'rgba(96,165,250,.18)' },
+      9:  { bg: 'rgba(167,139,250,.06)', border: 'rgba(167,139,250,.18)', text: '#c4b5fd', bannerBg: 'rgba(167,139,250,.18)' },
+      8:  { bg: 'rgba(52,211,153,.06)',  border: 'rgba(52,211,153,.18)',  text: '#6ee7b7', bannerBg: 'rgba(52,211,153,.18)' },
+      7:  { bg: 'rgba(251,191,36,.06)',  border: 'rgba(251,191,36,.18)',  text: '#fde68a', bannerBg: 'rgba(251,191,36,.18)' },
+    };
+
+    // All seasons sorted newest→oldest for range building; indicator iterates reverse
+    const SEASON_ORDER = [10, 9, 8, 7];
+    const SEASON_ORDER_CHRONO = [7, 8, 9, 10]; // oldest→newest for indicator
+
+    // Season ranges: { season, startPx, endPx } — populated in buildTimeline
+    let tlSeasonRanges = [];
+
+    function buildTimeline() {
+      // ── Gather events from ALL seasons ──────────────────────────────────
+      const allEvs = [];
+      for (const sNum of SEASON_ORDER) {
+        const season = HYROX_SEASONS[sNum];
+        if (!season) continue;
+        for (const ev of season.events) {
+          if (!ev.date) continue;
+          if (currentFilter !== 'all' && todayStatus(ev) !== currentFilter) continue;
+          allEvs.push(Object.assign({}, ev, { _season: sNum }));
+        }
+      }
+
+      if (!allEvs.length) {
+        tlContainer.innerHTML = '<div style="padding:60px 80px;color:rgba(255,255,255,.3);font-size:.8rem">No events match this filter.</div>';
+        tlMaxScroll = 0; tlOffset = 0; tlTarget = 0;
+        if (tlRafId) { cancelAnimationFrame(tlRafId); tlRafId = null; }
+        return;
+      }
+
+      // Sort chronologically
+      const evs = allEvs.slice().sort((a, b) => a.date.localeCompare(b.date));
+
+      // Date span
+      const first = new Date(evs[0].date);
+      const last  = new Date(evs[evs.length - 1].date);
+
+      const originDate = new Date(first);
+      originDate.setDate(originDate.getDate() - 60);
+
+      function dateToPx(dateStr) {
+        const d = dateStr ? new Date(dateStr) : new Date();
+        return Math.round((d - originDate) / 86400000 * PX_PER_DAY);
+      }
+
+      const todayPx = dateToPx(null);
+
+      // ── Build & resolve positions FIRST so totalWidth uses the adjusted px ─
+      const positions = evs.map((ev, i) => ({
+        ev,
+        px: dateToPx(ev.date),
+        side: i % 2 === 0 ? 'above' : 'below',
+      }));
+
+      for (let i = 1; i < positions.length; i++) {
+        const prev = positions[i - 1];
+        const cur  = positions[i];
+        if (cur.px - prev.px < CARD_W + MIN_GAP) {
+          cur.px = prev.px + CARD_W + MIN_GAP;
+        }
+      }
+
+      // Use the actual last adjusted position so the container is never too narrow
+      const lastAdjustedPx = positions.length ? positions[positions.length - 1].px : dateToPx(evs[evs.length - 1].date);
+      const totalWidth = lastAdjustedPx + CARD_W + 160;
+
+      // Clear and size
+      tlContainer.innerHTML = '';
+      tlContainer.style.width = totalWidth + 'px';
+      tlContainer.style.minWidth = totalWidth + 'px';
+      tlMaxScroll = Math.max(0, totalWidth - tlWrap.clientWidth + 80);
+
+      // ── Build season px ranges ───────────────────────────────────────────
+      tlSeasonRanges = [];
+      for (const sNum of SEASON_ORDER) {
+        const sevs = evs.filter(e => e._season === sNum);
+        if (!sevs.length) continue;
+        tlSeasonRanges.push({
+          season: sNum,
+          startPx: dateToPx(sevs[0].date),
+          endPx:   dateToPx(sevs[sevs.length - 1].date),
+          label:   HYROX_SEASONS[sNum].label,
+        });
+      }
+
+      // ── Rail ─────────────────────────────────────────────────────────────
+      const rail = document.createElement('div');
+      rail.className = 'tl-rail';
+      tlContainer.appendChild(rail);
+
+      // ── Season background bands + banners (sorted oldest→newest!) ─────────
+      // tlSeasonRanges is newest-first; sort by startPx so nextRange is always
+      // to the RIGHT (higher px) — prevents negative band widths.
+      const sortedRanges = tlSeasonRanges.slice().sort((a, b) => a.startPx - b.startPx);
+      sortedRanges.forEach((range, idx) => {
+        const col = SEASON_COLOURS[range.season] || SEASON_COLOURS[10];
+        const BAND_PAD = 50;
+        const nextRange = sortedRanges[idx + 1];
+        const bandLeft  = range.startPx - BAND_PAD;
+        const bandRight = nextRange ? nextRange.startPx - BAND_PAD : lastAdjustedPx + CARD_W + 80;
+        const bandWidth = Math.max(0, bandRight - bandLeft);
+
+        const bg = document.createElement('div');
+        bg.className = 'tl-season-bg';
+        bg.style.left  = bandLeft + 'px';
+        bg.style.width = bandWidth + 'px';
+        bg.style.background = col.bg;
+        bg.style.borderLeft = `2px dashed ${col.border}`;
+        tlContainer.appendChild(bg);
+
+        const banner = document.createElement('div');
+        banner.className = 'tl-season-banner';
+        banner.textContent = range.label;
+        banner.style.left = (bandLeft + bandWidth / 2) + 'px';
+        banner.style.background = col.bannerBg;
+        banner.style.color = col.text;
+        banner.style.border = `1px solid ${col.border}`;
+        tlContainer.appendChild(banner);
+      });
+
+      // ── Today marker ──────────────────────────────────────────────────────
+      const todayEl = document.createElement('div');
+      todayEl.className = 'tl-today';
+      todayEl.style.left = todayPx + 'px';
+      tlContainer.appendChild(todayEl);
+
+      // ── Month labels ──────────────────────────────────────────────────────
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      let cursor = new Date(originDate);
+      cursor.setDate(1);
+      while (cursor <= new Date(evs[evs.length - 1].date).setDate(31)) {
+        const lbl = document.createElement('div');
+        lbl.className = 'tl-month-label';
+        lbl.textContent = months[cursor.getMonth()] + ' ' + cursor.getFullYear().toString().slice(2);
+        const px = dateToPx(cursor.toISOString().slice(0, 10));
+        lbl.style.left = px + 'px';
+        tlContainer.appendChild(lbl);
+        cursor.setMonth(cursor.getMonth() + 1);
+        if (cursor.getFullYear() > last.getFullYear() + 1) break;
+      }
+
+      // ── Place nodes ───────────────────────────────────────────────────────
+      positions.forEach(({ ev, px, side }) => {
+        const s = todayStatus(ev);
+        const isChamp = ev.isChampionship;
+        const node = document.createElement('div');
+        node.className = `tl-node ${s} ${isChamp ? 'champ' : ''} ${side}`;
+        node.style.left = (px - CARD_W / 2) + 'px';
+        node.style.position = 'absolute';
+        node.dataset.id = ev.id;
+        node.dataset.season = ev._season;
+
+        const img = cityImg(ev);
+        const hasWaves = ev.wavesConfirmed && ev.waves && ev.waves.length;
+
+        node.innerHTML = `
+          <div class="tl-card">
+            ${img ? `<div class="tl-card-img" style="background-image:url('${img}')"></div>` : ''}
+            <div class="tl-flag">${ev.flag || ''}</div>
+            <div class="tl-city">${isChamp ? '🏆 ' : ''}${ev.city}</div>
+            <div class="tl-date">${ev.dateLabel || ev.date}</div>
+            ${hasWaves ? `<span class="tl-waves-badge">▶ Waves set</span>` : ''}
+            ${isTicketsOnSale(ev) && ev.venueUrl ? `<a href="${ev.venueUrl}" class="tl-tickets-badge" target="_blank" rel="noopener" onclick="event.stopPropagation()">🎟 Tickets</a>` : ''}
+          </div>
+          <div class="tl-stem"></div>
+          <div class="tl-dot"></div>`;
+
+        node.addEventListener('click', () => openModal(ev.id));
+        tlContainer.appendChild(node);
+      });
+
+      // ── Initial scroll position ────────────────────────────────────────────
+      const wrapW = tlWrap.clientWidth;
+      let initialPx;
+      if (currentFilter === 'past') {
+        // Most recent past event near 65% from left
+        initialPx = dateToPx(evs[evs.length - 1].date) - wrapW * 0.65;
+      } else {
+        // Scroll to currentSeason's first event (or today for S10)
+        const cRange = tlSeasonRanges.find(r => r.season === currentSeason);
+        initialPx = cRange ? cRange.startPx - wrapW * 0.15 : todayPx - wrapW * 0.35;
+      }
+      tlOffset = Math.max(0, Math.min(initialPx, tlMaxScroll));
+      tlTarget = tlOffset;
+      applyScroll();
+    }
+
+    // ── Season indicator: update active button based on scroll position ────
+    function updateSeasonIndicator() {
+      if (!tlSeasonRanges.length || currentView !== 'timeline') return;
+      const centerPx = tlOffset + tlWrap.clientWidth * 0.4;
+      // Iterate oldest→newest: last one whose startPx ≤ centerPx wins
+      let activeSeason = tlSeasonRanges[0].season; // default to first in list
+      for (const range of SEASON_ORDER_CHRONO) {
+        const r = tlSeasonRanges.find(x => x.season === range);
+        if (r && centerPx >= r.startPx - 80) activeSeason = r.season;
+      }
+      if (activeSeason !== currentSeason) {
+        currentSeason = activeSeason;
+        document.querySelectorAll('.season-btn').forEach(b =>
+          b.classList.toggle('active', Number(b.dataset.season) === activeSeason));
+        const s = HYROX_SEASONS[activeSeason];
+        document.getElementById('evSeasonTitle').textContent = `\u{1F4C5}\u00a0 ${s.label} Events`;
+        document.getElementById('evSeasonSub').textContent = `${s.years} \u00b7 Click any event for details`;
+      }
+    }
+
+    // Exposed: jump to a season on the unified timeline
+    window._tlJumpToSeason = function(sNum) {
+      const range = tlSeasonRanges.find(r => r.season === sNum);
+      if (!range) return;
+      const wrapW = tlWrap.clientWidth;
+      scrollTo(Math.max(0, range.startPx - wrapW * 0.15));
+    };
+
+    // Render current offset
+    function applyScroll() {
+      tlContainer.style.transform = `translateX(${-tlOffset}px)`;
+      updateSeasonIndicator();
+    }
+
+    // Clamp target and kick off lerp loop
+    function scrollTo(target) {
+      tlTarget = Math.max(0, Math.min(target, tlMaxScroll));
+      if (!tlRafId) tlRafId = requestAnimationFrame(lerpScroll);
+    }
+
+    // Lerp loop — runs until offset reaches target
+    function lerpScroll() {
+      const diff = tlTarget - tlOffset;
+      if (Math.abs(diff) < 0.4) {
+        tlOffset = tlTarget;
+        applyScroll();
+        tlRafId = null;
+        return;
+      }
+      tlOffset += diff * 0.14;  // ~0.14 = responsive but smooth
+      applyScroll();
+      tlRafId = requestAnimationFrame(lerpScroll);
+    }
+
+    // Wheel scroll (horizontal) — accumulates into target for momentum feel
+    tlWrap.addEventListener('wheel', e => {
+      e.preventDefault();
+      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      scrollTo(tlTarget + delta * 1.0);
+    }, { passive: false });
+
+    // Drag scroll — direct (instant) for precise feel
+    tlWrap.addEventListener('mousedown', e => {
+      isDragging = true;
+      dragStartX = e.clientX;
+      dragStartOffset = tlOffset;
+      tlWrap.classList.add('grabbing');
+      // cancel lerp so drag is 1:1
+      if (tlRafId) { cancelAnimationFrame(tlRafId); tlRafId = null; }
+    });
+    window.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      const raw = Math.max(0, Math.min(dragStartOffset + (dragStartX - e.clientX), tlMaxScroll));
+      tlOffset = raw;
+      tlTarget = raw;
+      applyScroll();
+    });
+    window.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      tlWrap.classList.remove('grabbing');
+    });
+
+    // Touch scroll — direct for precision, no lerp during touch
+    let touchStartX = 0, touchStartOffset = 0;
+    tlWrap.addEventListener('touchstart', e => {
+      touchStartX = e.touches[0].clientX;
+      touchStartOffset = tlOffset;
+      if (tlRafId) { cancelAnimationFrame(tlRafId); tlRafId = null; }
+    }, { passive: true });
+    tlWrap.addEventListener('touchmove', e => {
+      const raw = Math.max(0, Math.min(touchStartOffset + (touchStartX - e.touches[0].clientX), tlMaxScroll));
+      tlOffset = raw;
+      tlTarget = raw;
+      applyScroll();
+    }, { passive: true });
+
+    // Expose rebuild so season/filter changes can rebuild
+    window._buildTimeline = buildTimeline;
+  })();
+
+  // ── View toggle ────────────────────────────────────────────────────────────
+  document.getElementById('viewToggle').addEventListener('click', e => {
+    const btn = e.target.closest('.view-toggle-btn');
+    if (!btn) return;
+    currentView = btn.dataset.view;
+    document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.toggle('active', b === btn));
+    if (currentView === 'cards') {
+      grid.classList.remove('hidden');
+      tlWrap.classList.remove('active');
+      tlHint.style.display = 'none';
+    } else {
+      grid.classList.add('hidden');
+      tlWrap.classList.add('active');
+      tlHint.style.display = 'block';
+      window._buildTimeline();
+    }
+  });
+
+  // ── Season switcher ────────────────────────────────────────────────────────
+  document.getElementById('seasonSwitcher').addEventListener('click', e => {
+    const btn = e.target.closest('.season-btn');
+    if (!btn) return;
+    const sNum = Number(btn.dataset.season);
+    if (currentView === 'timeline') {
+      // In timeline mode: just scroll to that season — no rebuild
+      window._tlJumpToSeason && window._tlJumpToSeason(sNum);
+      return;
+    }
+    // Cards mode: normal season switch
+    currentSeason = sNum;
+    currentFilter = 'all';
+    document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.ev-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
+    const s = HYROX_SEASONS[currentSeason];
+    document.getElementById('evSeasonTitle').textContent = `📅\u00a0 ${s.label} Events`;
+    document.getElementById('evSeasonSub').textContent = `${s.years} · Click any event for details`;
+    renderGrid();
+  });
+
+  // ── Filter buttons ────────────────────────────────────────────────────────
+  document.getElementById('eventsFilter').addEventListener('click', e => {
+    const btn = e.target.closest('.ev-filter-btn');
+    if (!btn) return;
+    document.querySelectorAll('.ev-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    if (currentView === 'cards') renderGrid(); else window._buildTimeline();
+  });
+
+  // ── Modal ─────────────────────────────────────────────────────────────────
+  const overlay = document.getElementById('evModalOverlay');
+
+  function openModal(id) {
+    let ev = null;
+    for (const s of Object.values(HYROX_SEASONS)) {
+      ev = s.events.find(e => e.id === id);
+      if (ev) break;
+    }
+    if (!ev) return;
+    const s = todayStatus(ev);
+    const isChamp = ev.isChampionship;
+    const statusLabel = isChamp ? 'World Championship' : s.charAt(0).toUpperCase() + s.slice(1);
+    const statusClass = isChamp ? 'championship' : s;
+
+    // ── Hero ──
+    const hero = document.getElementById('evModalHero');
+    hero.className = `ev-modal-hero ${statusClass}`;
+
+    const img = cityImg(ev);
+    const heroImg = document.getElementById('evModalHeroImg');
+    heroImg.style.backgroundImage = img ? `url('${img}')` : 'none';
+    heroImg.style.background = img ? '' : 'linear-gradient(135deg,#1a1a2e,#16213e)';
+
+    document.getElementById('evModalIata').textContent = IATA_BY_CITY[ev.city] || '';
+
+    const badge = document.getElementById('evModalStatusBadge');
+    badge.textContent = statusLabel;
+    badge.className = `ev-modal-status-badge ${statusClass}`;
+
+    document.getElementById('evModalExtLink').href = ev.venueUrl;
+    document.getElementById('evModalFlag').textContent = ev.flag;
+    document.getElementById('evModalCity').textContent = (isChamp ? '🏆 ' : '') + ev.city;
+    document.getElementById('evModalMeta').textContent = `${ev.venue}  ·  ${ev.dateLabel}`;
+
+    // ── Map ──
+    const mapEl = document.getElementById('evModalMap');
+    mapEl.style.position = '';
+    if (ev.mapImgDirect) {
+      // Direct image (JPG/PNG) — show inline
+      mapEl.innerHTML = `<img src="${ev.mapImgDirect}" alt="${ev.city} venue map" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block">`;
+    } else if (ev.mapImg) {
+      const isPdf = ev.mapImg.toLowerCase().endsWith('.pdf');
+      const isLocal = !ev.mapImg.startsWith('http');
+      const isHttp = location.protocol.startsWith('http');
+      if (isLocal && isHttp) {
+        // GitHub Pages / HTTP — same-origin PDF iframe works fine
+        mapEl.innerHTML = `
+          <iframe
+            src="${ev.mapImg}"
+            style="width:100%;height:100%;border:0;border-radius:8px;background:#fff"
+            title="${ev.city} venue floor plan"
+          ></iframe>
+          <a href="${ev.mapImg}" target="_blank" rel="noopener noreferrer"
+             style="position:absolute;bottom:8px;right:8px;z-index:2;background:rgba(0,0,0,.72);color:#ffe500;font-size:.7rem;font-weight:700;padding:5px 11px;border-radius:12px;text-decoration:none;backdrop-filter:blur(4px)">
+            Open full PDF ↗
+          </a>`;
+        mapEl.style.position = 'relative';
+      } else {
+        // file:// or remote URL — browsers block PDF iframes; use button card
+        mapEl.innerHTML = `
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center;height:100%">
+            <div style="font-size:2.8rem;line-height:1">${isPdf ? '📋' : '🗺'}</div>
+            <div style="font-size:.8rem;color:rgba(255,255,255,.5);line-height:1.5">
+              <strong style="color:rgba(255,255,255,.85);display:block;margin-bottom:4px">Venue Floor Plan</strong>
+              ${isLocal ? '<span style="color:#4caf50;font-size:.7rem">✓ Saved locally</span>' : (isPdf ? 'Official PDF floor plan available' : 'Venue map available')}
+            </div>
+            <a href="${ev.mapImg}" target="_blank" rel="noopener noreferrer"
+               style="display:inline-flex;align-items:center;gap:6px;background:#ffe500;color:#0f0f13;font-size:.78rem;font-weight:700;padding:8px 16px;border-radius:20px;text-decoration:none;letter-spacing:.02em">
+              ${isPdf ? 'Open Floor Plan PDF ↗' : 'View Map ↗'}
+            </a>
+          </div>`;
+      }
+    } else {
+      mapEl.innerHTML = `
+        <div class="ev-modal-map-none">
+          <span class="map-icon">🗺</span>
+          Venue map on official event page
+          <a class="ev-modal-map-pdf-link" href="${ev.venueUrl}" target="_blank" rel="noopener noreferrer">
+            Open event page ↗
+          </a>
+        </div>`;
+    }
+
+    // ── Waves ──
+    const wavesEl = document.getElementById('evModalWaves');
+    const wavesPanel = wavesEl.closest('.ev-waves-panel');
+    document.getElementById('evWavesWarn')?.remove();
+
+    if (!ev.waves || ev.waves.length === 0) {
+      const isPast = ev.status === 'past' || new Date(ev.date) < new Date();
+      wavesEl.innerHTML = isPast
+        ? `<div class="ev-wave-row" style="grid-template-columns:1fr">
+          <div class="ev-wave-cat" style="padding:18px 14px;color:rgba(255,255,255,.4);font-size:.74rem;text-align:center;line-height:1.7">
+            Race complete<br>
+            <a href="https://hyrox.com/results/" target="_blank" rel="noopener noreferrer"
+               style="color:#60a5fa;text-decoration:none">View results on hyrox.com ↗</a>
+          </div>
+        </div>`
+        : `<div class="ev-wave-row" style="grid-template-columns:1fr">
+          <div class="ev-wave-cat" style="padding:18px 14px;color:rgba(255,255,255,.4);font-size:.74rem;text-align:center;line-height:1.7">
+            Wave times not yet announced<br>
+            <a href="${ev.venueUrl}" target="_blank" rel="noopener noreferrer"
+               style="color:#60a5fa;text-decoration:none">Check official event page ↗</a>
+          </div>
+        </div>`;
+    } else {
+      if (ev.wavesConfirmed === false) {
+        const warn = document.createElement('p');
+        warn.id = 'evWavesWarn';
+        warn.className = 'ev-waves-unconfirmed';
+        warn.innerHTML = `⚠️ Estimated — verify on <a href="${ev.venueUrl}" target="_blank" rel="noopener noreferrer">official page</a>`;
+        wavesPanel.querySelector('.ev-modal-section-title').insertAdjacentElement('afterend', warn);
+      }
+      const days = [...new Set(ev.waves.map(w => w.day))].sort((a, b) => a - b);
+      const startDate = new Date(ev.date);
+      wavesEl.innerHTML = days.map(day => {
+        const dayDate = new Date(startDate);
+        dayDate.setDate(startDate.getDate() + (day - 1));
+        const dayLabel = dayDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+        const rows = ev.waves.filter(w => w.day === day).map(w => `
+          <div class="ev-wave-row">
+            <div class="ev-wave-cat">${w.category}</div>
+            <div class="ev-wave-time">${w.time}</div>
+          </div>`).join('');
+        return `<div class="ev-wave-day-header">Day ${day} — ${dayLabel}</div>${rows}`;
+      }).join('');
+    }
+
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('evModalClose').addEventListener('click', closeModal);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // Sync heading to the default season on load
+  (function initHeading() {
+    const s = HYROX_SEASONS[currentSeason];
+    if (!s) return;
+    document.getElementById('evSeasonTitle').textContent = `📅\u00a0 ${s.label} Events`;
+    document.getElementById('evSeasonSub').textContent = `${s.years} · Click any event for details`;
+  })();
+
+  renderGrid();
+
+  // Probe live ticket availability after initial render
+  runTicketsProbe();
+})();
+</script>
+</body>
+</html>
