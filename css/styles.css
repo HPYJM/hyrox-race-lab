@@ -441,6 +441,54 @@ body {
 }
 .athlete-chip-remove:hover { color: #f87171; }
 
+.athlete-chip-expand {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .8rem;
+  line-height: 1;
+  padding: 0 2px;
+  flex-shrink: 0;
+  transition: color .15s;
+}
+.athlete-chip-expand:hover { color: var(--text); }
+
+.athlete-chip-wrap { display: flex; flex-direction: column; gap: 0; }
+
+.athlete-race-list {
+  display: none;
+  flex-direction: column;
+  gap: 1px;
+  margin: 3px 0 6px 10px;
+  padding: 6px 10px;
+  background: rgba(255,255,255,.03);
+  border-left: 2px solid var(--border);
+  border-radius: 0 0 6px 6px;
+}
+.athlete-race-list.open { display: flex; }
+.athlete-race-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .74rem;
+  color: #cbd5e1;
+  padding: 3px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: background .1s;
+}
+.athlete-race-row:hover { background: rgba(255,255,255,.05); }
+.athlete-race-row input[type=checkbox] {
+  accent-color: #3b82f6;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+}
+.athlete-race-label { flex: 1; }
+
 /* ─── RACE PICKER ───────────────────────────────────────────────────── */
 .race-picker-panel {
   background: #0d1b2e;

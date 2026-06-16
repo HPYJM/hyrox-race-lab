@@ -123,32 +123,76 @@ function buildAthleteList() {
     const raceIds = getAthleteRaceIds(a.slug);
     const allHidden = raceIds.length > 0 && raceIds.every(id => hiddenRaces.has(id));
     const isSeed = seedSlugs.has(a.slug);
+    const races = getActiveRaces().filter(r => r.athleteSlug === a.slug || r.partnerSlug === a.slug);
+    const raceListHtml = races.length ? `
+      <div class="athlete-race-list" id="rl-${a.slug}">
+        ${races.map(r => `
+          <label class="athlete-race-row">
+            <input type="checkbox" class="athlete-race-cb" data-race-id="${r.id}" ${hiddenRaces.has(r.id) ? '' : 'checked'}>
+            <span class="athlete-race-label">${r.label || r.id}</span>
+          </label>`).join('')}
+      </div>` : '';
     return `
-    <div class="athlete-chip${allHidden ? ' dimmed' : ''}" data-slug="${a.slug}" title="Click to toggle races">
-      <span class="athlete-chip-name">${a.name}</span>
-      <span class="athlete-chip-slug">${a.slug}</span>
-      ${isSeed
-        ? '<span class="athlete-chip-seed">seed</span>'
-        : ''}
-      <button class="athlete-chip-remove" data-slug="${a.slug}"
-              data-seed="${isSeed}"
-              title="${isSeed ? 'Toggle races' : 'Remove athlete'}">×</button>
+    <div class="athlete-chip-wrap">
+      <div class="athlete-chip${allHidden ? ' dimmed' : ''}" data-slug="${a.slug}" title="Click to toggle all races">
+        <span class="athlete-chip-name">${a.name}</span>
+        <span class="athlete-chip-slug">${a.slug}</span>
+        ${isSeed ? '<span class="athlete-chip-seed">seed</span>' : ''}
+        ${races.length ? `<button class="athlete-chip-expand" data-slug="${a.slug}" title="Show races">▾</button>` : ''}
+        <button class="athlete-chip-remove" data-slug="${a.slug}"
+                data-seed="${isSeed}"
+                title="${isSeed ? 'Toggle races' : 'Remove athlete'}">×</button>
+      </div>
+      ${raceListHtml}
     </div>`;
   }).join('');
 
+  // chip body → toggle all races
   list.querySelectorAll('.athlete-chip[data-slug]').forEach(chip => {
-    // click chip body → toggle all races
     chip.addEventListener('click', e => {
       if (e.target.classList.contains('athlete-chip-remove')) return;
+      if (e.target.classList.contains('athlete-chip-expand')) return;
       toggleAthleteRaces(chip.dataset.slug);
     });
   });
 
+  // expand button → show/hide race list
+  list.querySelectorAll('.athlete-chip-expand').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const rl = document.getElementById(`rl-${btn.dataset.slug}`);
+      if (!rl) return;
+      const open = rl.classList.toggle('open');
+      btn.textContent = open ? '▴' : '▾';
+    });
+  });
+
+  // per-race checkbox
+  list.querySelectorAll('.athlete-race-cb').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const id = cb.dataset.raceId;
+      if (cb.checked) hiddenRaces.delete(id);
+      else {
+        const wouldHideAll = getActiveRaces().every(r => hiddenRaces.has(r.id) || r.id === id);
+        if (wouldHideAll) { cb.checked = true; return; }
+        hiddenRaces.add(id);
+      }
+      document.querySelectorAll('.rc').forEach(card => {
+        card.classList.toggle('dimmed', hiddenRaces.has(card.dataset.raceId));
+      });
+      syncAthleteChips();
+      rebuildAllCharts();
+      initTableRows();
+      refreshTable();
+      syncUrlHash();
+    });
+  });
+
+  // remove button
   list.querySelectorAll('.athlete-chip-remove').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       if (btn.dataset.seed === 'true') {
-        // seed: just toggle visibility
         toggleAthleteRaces(btn.dataset.slug);
       } else {
         athleteStore.remove(btn.dataset.slug);
