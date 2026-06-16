@@ -117,7 +117,7 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000) {
       });
     });
 
-    return await page.evaluate((ticketRe, doFull) => {
+    return await page.evaluate(({ ticketRe, doFull }) => {
       const elems      = Array.from(document.querySelectorAll('button, a'));
       const ticketsOn  = elems.some(el => new RegExp(ticketRe).test(el.textContent));
 
@@ -227,7 +227,7 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000) {
         waves,
         wavesConfirmed: waves.length > 0,
       };
-    }, TICKET_BTN_RE.source, full);
+    }, { ticketRe: TICKET_BTN_RE.source, doFull: full });
 
   } catch (err) {
     console.warn(`    ⚠ Failed to probe ${venueUrl}: ${err.message}`);
