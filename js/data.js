@@ -1,6 +1,5 @@
 // ─── ATHLETE TRACKING CONFIG ────────────────────────────────────────────────
 const TRACKED_ATHLETES = [
-  { slug: 'andrei-heyer',         name: 'Andrei Heyer' },
   { slug: 'nicolae-andrei-heyer', name: 'Nicolae Andrei Heyer' },
   { slug: 'nicolae-andrei-gabor', name: 'Nicolae-Andrei Gabor' }
 ];
@@ -9,36 +8,6 @@ const TRACKED_ATHLETES = [
 // These are verified manually from hyresult.com. New races discovered via
 // auto-sync are appended from localStorage (store.js).
 const SEED_RACES = [
-  {
-    resultId: 'LR3MS4JI51BA50',
-    id: "BER'26", label: 'Berlin 2026', athlete: 'Andrei Heyer',
-    athleteSlug: 'andrei-heyer', partner: null, partnerSlug: null,
-    category: 'OPEN', division: 'MEN', ageGroup: '30-34', dateIso: '2026-03-14',
-    rank: '#1602 of 4142', ag: '#432 AG30-34', pct: 'Top 38.7%',
-    color: '#3b82f6',
-    total: '1:21:42', totalSecs: 4902,
-    runsSecs: 1996, workoutsSecs: 2119, roxzoneSecs: 787,
-    runs:     [216, 221, 237, 241, 247, 253, 240, 341],
-    workouts: [262, 179, 252, 331, 279, 126, 377, 313],
-    rxEntry:  [ 10,  14,  48,  71,  69,  95, 103],
-    rxExit:   [ 80,  71,  78,  52,  48,  31,  17],
-    radarStrength: [86.2, 36.1, 42.1, 64.5, 43.3, 53.1, 38.9, 23.2, 76.8]
-  },
-  {
-    resultId: 'LR3MS4JI44350B',
-    id: "FRA'25", label: 'Frankfurt 2025', athlete: 'Andrei Heyer',
-    athleteSlug: 'andrei-heyer', partner: null, partnerSlug: null,
-    category: 'OPEN', division: 'MEN', ageGroup: '30-34', dateIso: '2025-11-08',
-    rank: '#1390 of 1883', ag: '#371 AG30-34', pct: 'Top 71.9%',
-    color: '#f59e0b',
-    total: '1:36:44', totalSecs: 5804,
-    runsSecs: 2821, workoutsSecs: 2425, roxzoneSecs: 558,
-    runs:     [240, 294, 367, 374, 403, 360, 354, 429],
-    workouts: [278, 223, 377, 295, 350, 119, 338, 445],
-    rxEntry:  [  4,  10,   8,  52,  57,  55,  55],
-    rxExit:   [ 44, 148,  48,  10,  21,  24,  22],
-    radarStrength: [24.9, 22.6, 15.9, 16.9, 59.0, 3.9, 50.4, 35.3, 37.0]
-  },
   {
     resultId: 'LR3MS4JI52C790',
     id: "RI'26", label: 'Riga 2026', athlete: 'Nicolae Andrei Heyer',
