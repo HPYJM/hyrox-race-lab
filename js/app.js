@@ -4,17 +4,19 @@
 // into a human-friendly title and subtitle for the race picker.
 function formatRaceLabel(raw) {
   if (!raw) return { title: '—', sub: '' };
-  // strip leading result ID numbers/hashes
-  const clean = raw.replace(/^\s*\d+\s*#?\s*\d*\s*/, '').trim();
-  // try to extract event name, year, division
+  let clean = raw
+    .replace(/^\d*:\d{2}:\d{2}\s*/, '')   // strip leading time e.g. "1:21:42"
+    .replace(/^#?\s*\d+\s*/, '')            // strip leading rank e.g. "#1602"
+    .replace(/^(1?HYROX)\s*/i, '')          // strip leading "HYROX" or "1HYROX"
+    .trim();
+  // try to extract city/event name, year, division
   const m = clean.match(/^(.*?)(\d{4})\s*(.*?)$/);
   if (m) {
-    const event = m[1].replace(/^(HYROX|1HYROX)\s*/i, '').trim() || 'HYROX';
+    const event = m[1].trim() || 'HYROX';
     const year  = m[2];
     const div   = m[3].trim();
     return { title: `${event} ${year}`.trim(), sub: div };
   }
-  // fallback: first 40 chars as title
   return { title: clean.slice(0, 40), sub: '' };
 }
 

@@ -64,7 +64,20 @@ function parseAthletePage(html) {
     const m = a.getAttribute('href').match(/\/result\/([A-Z0-9]+)/i);
     if (!m) return;
     const resultId = m[1];
-    const text = a.closest('li, p, div')?.textContent?.trim() || a.textContent.trim();
+
+    // Prefer the link's own text; only walk up to li or a tight container.
+    // Avoid climbing into large divs that contain multiple entries.
+    let text = a.textContent.trim();
+    if (!text || text.length < 4) {
+      const li = a.closest('li');
+      if (li) text = li.textContent.trim();
+    }
+
+    // Strip leading time patterns like "1:21:42" or ":21:42"
+    text = text.replace(/^\d*:\d{2}:\d{2}\s*/, '').trim();
+    // Strip leading rank patterns like "#1602" or "# 1602"
+    text = text.replace(/^#?\s*\d+\s*/, '').trim();
+
     if (!found.some(f => f.resultId === resultId)) {
       found.push({ resultId, text });
     }
