@@ -2,8 +2,10 @@
 // Discovers new races for tracked athletes and imports splits automatically.
 
 const CORS_PROXIES = [
-  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  url => `https://thingproxy.freeboard.io/fetch/${url}`,
+  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`
 ];
 
 const STATION_ORDER_FULL = [
@@ -12,7 +14,7 @@ const STATION_ORDER_FULL = [
 ];
 
 // ─── LOW-LEVEL FETCH ─────────────────────────────────────────────────────────
-async function proxyFetch(url, timeoutMs = 8000) {
+async function proxyFetch(url, timeoutMs = 10000) {
   for (const makeProxy of CORS_PROXIES) {
     const proxyUrl = makeProxy(url);
     try {
@@ -20,7 +22,11 @@ async function proxyFetch(url, timeoutMs = 8000) {
       const tid = setTimeout(() => ctrl.abort(), timeoutMs);
       const res = await fetch(proxyUrl, { signal: ctrl.signal });
       clearTimeout(tid);
-      if (res.ok) return await res.text();
+      // skip on any non-2xx (403 block, 429 rate limit, etc) and try next proxy
+      if (!res.ok) continue;
+      const text = await res.text();
+      // sanity check — proxy returned a real HTML page, not an error JSON
+      if (text.length > 200 && !text.startsWith('{"')) return text;
     } catch { /* try next proxy */ }
   }
   return null;
