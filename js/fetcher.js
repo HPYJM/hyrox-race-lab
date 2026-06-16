@@ -4,18 +4,20 @@
 // Each proxy entry: { make: url => proxyUrl, json: bool }
 // json:true  → response is JSON; extract .contents field
 // json:false → response is raw HTML text
+//
+// CF_WORKER_URL: set this to your Cloudflare Worker URL once deployed.
+// Deploy cf-worker/proxy.js at https://dash.cloudflare.com/workers
+// e.g. "https://hyrox-proxy.YOUR-SUBDOMAIN.workers.dev"
+const CF_WORKER_URL = '';
+
 const CORS_PROXIES = [
+  // Cloudflare Worker (dedicated, most reliable) — enabled when CF_WORKER_URL is set
+  ...(CF_WORKER_URL ? [{ make: url => `${CF_WORKER_URL}?url=${encodeURIComponent(url)}`, json: false }] : []),
   // allorigins /get — wraps in JSON {contents:"<html>..."}
   { make: url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, json: true },
   // allorigins /raw — plain text fallback
   { make: url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, json: false },
-  // whateverorigin — similar to allorigins, different host
-  { make: url => `https://www.whateverorigin.com/get?url=${encodeURIComponent(url)}`, json: true },
-  // corsproxy.app — distinct service from corsproxy.io, doesn't block hyresult
-  { make: url => `https://corsproxy.app/?url=${encodeURIComponent(url)}`, json: false },
-  // cors.eu.org — European proxy
-  { make: url => `https://cors.eu.org/${url}`, json: false },
-  // corsproxy.io — last resort (blocks hyresult.com)
+  // corsproxy.io — last resort (may block hyresult.com)
   { make: url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`, json: false }
 ];
 
