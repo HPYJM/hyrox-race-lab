@@ -255,7 +255,7 @@ async function lookupAthlete(query) {
   let slug;
   const urlMatch = query.match(/\/athlete\/([a-z0-9-]+)/i);
   if (urlMatch) {
-    slug = urlMatch[1].toLowerCase();
+    slug = urlMatch[1]; // preserve original casing from URL
   } else if (/^[a-z0-9-]+$/.test(query) && !query.includes(' ')) {
     slug = query.toLowerCase(); // already a slug
   } else {

@@ -1,4 +1,23 @@
 // ─── URL HASH STATE ─────────────────────────────────────────────────────────────
+
+// Parses the raw hyresult race text (e.g. "1HYROX Frankfurt 2025 PRO MEN 16-24")
+// into a human-friendly title and subtitle for the race picker.
+function formatRaceLabel(raw) {
+  if (!raw) return { title: '—', sub: '' };
+  // strip leading result ID numbers/hashes
+  const clean = raw.replace(/^\s*\d+\s*#?\s*\d*\s*/, '').trim();
+  // try to extract event name, year, division
+  const m = clean.match(/^(.*?)(\d{4})\s*(.*?)$/);
+  if (m) {
+    const event = m[1].replace(/^(HYROX|1HYROX)\s*/i, '').trim() || 'HYROX';
+    const year  = m[2];
+    const div   = m[3].trim();
+    return { title: `${event} ${year}`.trim(), sub: div };
+  }
+  // fallback: first 40 chars as title
+  return { title: clean.slice(0, 40), sub: '' };
+}
+
 function syncUrlHash() {
   const params = new URLSearchParams();
   params.set('cat', activeCategory);
@@ -209,16 +228,22 @@ function showRacePicker(slug, name, races) {
       ${name} <span>· ${races.length} race${races.length !== 1 ? 's' : ''} found</span>
     </div>
     <div class="race-picker-list">
-      ${newRaces.map(r => `
+      ${newRaces.map(r => {
+        const label = formatRaceLabel(r.text || r.resultId);
+        return `
         <label class="race-picker-item">
-          <input type="checkbox" value="${r.resultId}" data-text="${r.text.replace(/"/g,'&quot;')}" checked>
-          ${r.text || r.resultId}
-        </label>`).join('')}
-      ${existingRaces.map(r => `
+          <input type="checkbox" value="${r.resultId}" data-text="${(r.text||r.resultId).replace(/"/g,'&quot;')}" checked>
+          <span class="rp-label"><strong>${label.title}</strong><small>${label.sub}</small></span>
+        </label>`;
+      }).join('')}
+      ${existingRaces.map(r => {
+        const label = formatRaceLabel(r.text || r.resultId);
+        return `
         <label class="race-picker-item already">
           <input type="checkbox" value="${r.resultId}" disabled>
-          ${r.text || r.resultId}
-        </label>`).join('')}
+          <span class="rp-label rp-label--already"><strong>${label.title}</strong><small>${label.sub}</small></span>
+        </label>`;
+      }).join('')}
     </div>
     <div class="race-picker-actions">
       <button class="race-picker-import-btn" id="racePickerImport">Import selected</button>
