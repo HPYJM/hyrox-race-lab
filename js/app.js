@@ -37,6 +37,10 @@ function restoreFromHash() {
     if (cat && ['OPEN', 'DOUBLES'].includes(cat)) activeCategory = cat;
     const hiddenParam = params.get('hidden');
     if (hiddenParam) hiddenParam.split(',').filter(Boolean).forEach(id => hiddenRaces.add(id));
+    // Remove stale hidden IDs that no longer correspond to any race
+    [...hiddenRaces].forEach(id => {
+      if (!RACES.some(r => r.id === id)) hiddenRaces.delete(id);
+    });
   } catch { /* malformed hash — ignore */ }
 }
 

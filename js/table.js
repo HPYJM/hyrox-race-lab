@@ -92,6 +92,9 @@ function renderTable(rows) {
     </tr></thead><tbody>`;
 
   rows.forEach(row => {
+    // skip rows with missing data (stale tableRows after race removal)
+    if (row.vals.some(v => v == null)) return;
+
     // best/worst only among currently visible races
     const vis = row.vals.filter((_, i) => !hiddenRaces.has(activeRaces[i].id));
     const mn = vis.length ? Math.min(...vis) : Math.min(...row.vals);
@@ -115,7 +118,7 @@ function renderTable(rows) {
         <td style="color:${catColor};font-size:.72rem">${row.cat}</td>
         <td style="font-weight:500">${row.lbl}</td>
         ${cells}
-        <td><span class="pill" style="background:${rgba(activeRaces[bestIdx].color,.18)};color:${activeRaces[bestIdx].color}">${activeRaces[bestIdx].id}</span></td>
+        <td><span class="pill" style="background:${rgba(activeRaces[bestIdx]?.color ?? '#888',.18)};color:${activeRaces[bestIdx]?.color ?? '#888'}">${activeRaces[bestIdx]?.id ?? ''}</span></td>
         <td style="color:var(--muted)">+${fmt(diff)}</td>
       </tr>`;
   });
