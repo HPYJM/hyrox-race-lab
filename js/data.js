@@ -1,43 +1,10 @@
 // ─── ATHLETE TRACKING CONFIG ────────────────────────────────────────────────
-const TRACKED_ATHLETES = [
-  { slug: 'nicolae-andrei-heyer', name: 'Nicolae Andrei Heyer' },
-  { slug: 'nicolae-andrei-gabor', name: 'Nicolae-Andrei Gabor' }
-];
+const TRACKED_ATHLETES = [];
 
 // ─── SEED RACE DATA ───────────────────────────────────────────────────────────
 // These are verified manually from hyresult.com. New races discovered via
 // auto-sync are appended from localStorage (store.js).
 const SEED_RACES = [
-  {
-    resultId: 'LR3MS4JI52C790',
-    id: "RI'26", label: 'Riga 2026', athlete: 'Nicolae Andrei Heyer',
-    athleteSlug: 'nicolae-andrei-heyer', partner: null, partnerSlug: null,
-    category: 'OPEN', division: 'MEN', ageGroup: '30-34', dateIso: '2026-03-01',
-    rank: '#349 of 879', ag: '#100 AG30-34', pct: 'Top 43.9%',
-    color: '#10b981',
-    total: '1:23:41', totalSecs: 5021,
-    runsSecs: 2532, workoutsSecs: 2202, roxzoneSecs: 287,
-    runs:     [316, 287, 327, 324, 328, 323, 326, 301],
-    workouts: [262, 167, 257, 353, 281, 128, 405, 349],
-    rxEntry:  [ 25,  22,   8,  14,  14,  22,  25],
-    rxExit:   [ 15,  17,  16,  30,   6,  34,  39],
-    radarStrength: [40.5, 36.1, 50.4, 64.5, 36.5, 38.6, 38.9, 16.9, 66.4]
-  },
-  {
-    resultId: 'LR3MS4JI2E1F03',
-    id: "CGN'25", label: 'Cologne 2025', athlete: 'Nicolae-Andrei Gabor',
-    athleteSlug: 'nicolae-andrei-gabor', partner: null, partnerSlug: null,
-    category: 'OPEN', division: 'MEN', ageGroup: '30-34', dateIso: '2025-10-04',
-    rank: '#1421 of 1840', ag: '#410 AG30-34', pct: 'Top 77.2%',
-    color: '#f97316',
-    total: '1:37:14', totalSecs: 5834,
-    runsSecs: 2894, workoutsSecs: 2449, roxzoneSecs: 491,
-    runs:     [277, 344, 468, 356, 372, 336, 338, 403],
-    workouts: [270, 217, 289, 437, 363, 120, 320, 433],
-    rxEntry:  [  7,   7,  15,  22,  40,  63,  61],
-    rxExit:   [ 43,  48,  36,  89,  28,  14,  18],
-    radarStrength: null  // not yet scraped
-  },
   {
     resultId: 'LR3MS4JI4E9AD0',
     id: "CGN'26", label: 'Cologne 2026 (Doubles)', athlete: 'N.A. Heyer + L. Ungefuk',
