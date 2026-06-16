@@ -68,6 +68,12 @@ function renderTable(rows) {
   const table = document.getElementById('stable');
   const activeRaces = getActiveRaces();
 
+  // No races for this category — show empty state
+  if (!activeRaces.length) {
+    table.innerHTML = '<tbody><tr><td colspan="10" style="text-align:center;padding:24px;color:var(--muted)">No races in this category yet. Add an athlete to get started.</td></tr></tbody>';
+    return;
+  }
+
   // thead
   const raceCols = activeRaces.map((r, ri) =>
     `<th data-sort="val${ri}" class="sortable">

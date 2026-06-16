@@ -579,9 +579,9 @@ function initExport() {
 function init() {  restoreFromHash();  buildHeader();
   rebuildAllCharts();
   initTableRows();
+  initCategoryToggle();
   refreshTable();
   setupTableFilter();
-  initCategoryToggle();
   initSectionToggles();
   initAthleteSearch();
   initTicker();
