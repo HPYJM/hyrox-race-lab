@@ -109,6 +109,26 @@ const athleteStore = {
   }
 };
 
+// Removes all stored races belonging to an athlete slug.
+function removeAthleteRaces(slug) {
+  // Remove from localStorage race store
+  const stored = store.getAll().filter(
+    r => r.athleteSlug !== slug && r.partnerSlug !== slug
+  );
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(stored)); } catch {}
+  // Remove from in-memory RACES array (non-seed only — seeds are already gone)
+  for (let i = RACES.length - 1; i >= 0; i--) {
+    const r = RACES[i];
+    if (r.athleteSlug === slug || r.partnerSlug === slug) {
+      RACES.splice(i, 1);
+    }
+  }
+  // Also clear from hiddenRaces so no stale IDs linger
+  [...hiddenRaces].forEach(id => {
+    if (!RACES.some(r => r.id === id)) hiddenRaces.delete(id);
+  });
+}
+
 // Returns seed athletes merged with any user-added athletes (no duplicates).
 function getTrackedAthletes() {
   const seedSlugs = new Set(TRACKED_ATHLETES.map(a => a.slug));

@@ -195,8 +195,15 @@ function buildAthleteList() {
       if (btn.dataset.seed === 'true') {
         toggleAthleteRaces(btn.dataset.slug);
       } else {
-        athleteStore.remove(btn.dataset.slug);
+        const slug = btn.dataset.slug;
+        athleteStore.remove(slug);
+        removeAthleteRaces(slug);
         buildAthleteList();
+        buildHeader();
+        rebuildAllCharts();
+        initTableRows();
+        refreshTable();
+        syncUrlHash();
       }
     });
   });
