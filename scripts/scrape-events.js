@@ -104,7 +104,7 @@ async function discoverEventUrls(page) {
 
 // ── Step 2: probe one event page (tickets + full data for new events) ────────
 
-async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000) {
+async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000, evDate = null) {
   try {
     await page.goto(venueUrl, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
     await page.waitForTimeout(1500);
@@ -117,7 +117,7 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000) {
       });
     });
 
-    return await page.evaluate(({ ticketRe, doFull }) => {
+    return await page.evaluate(({ ticketRe, doFull, evDate }) => {
       const elems      = Array.from(document.querySelectorAll('button, a'));
       const ticketsOn  = elems.some(el => new RegExp(ticketRe).test(el.textContent));
 
@@ -156,78 +156,136 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000) {
       // Map PDF (also detected in light probe above; here we reuse it)
       const mapImg = mapImgQuick;
 
-      // ── Wave scraping ──────────────────────────────────────────────────
-      // Pattern: <b> or <strong> "SATURDAY 1 AUGUST 2026" (day header)
-      //          <span> "HYROX MEN 10:00 – 13:50"         (category + time)
-      // Alternatively single strings like "09:00AM – 13:40PM" without category.
-      const DAY_NAMES = /\b(saturday|sunday|monday|tuesday|wednesday|thursday|friday)\b/i;
-      const TIME_RE   = /\b(\d{1,2}:\d{2})\s*(?:AM|PM)?\s*[–\-]\s*(\d{1,2}:\d{2})/i;
-      const TIME_SINGLE = /\b(\d{1,2}:\d{2})\s*(?:AM|PM)?\b/i;
+      // ── Wave scraping ────────────────────────────────────────────────
+      // Supports two layouts:
+      //   Layout A: bare day-name headers + 24-hr times (most events)
+      //   Layout B: "DayName, D. Month YYYY" headers + am/pm times (championships)
+      //   Also handles "Category | DayName, time am/pm" inline-day entries.
 
-      // Map day name → ISO weekday number (Mon=1 … Sun=7)
-      const DAY_ORDER = { monday:1, tuesday:2, wednesday:3, thursday:4, friday:5, saturday:6, sunday:7 };
-      // A pure day-header line: contains a day name but NO time at all
-      const IS_DAY_HEADER = text =>
-        DAY_NAMES.test(text) && !TIME_RE.test(text) && !TIME_SINGLE.test(text);
+      const DAY_NAMES  = /\b(saturday|sunday|monday|tuesday|wednesday|thursday|friday)\b/i;
+      const TIME_AMPM  = /\b(\d{1,2}:\d{2})\s*(am|pm)\b/i;
+      const FULL_DATE  = /\b(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday),?\s+\d{1,2}[\.\s]+\w+[\.\s]+\d{4}/i;
+      const DAY_ORDER  = { monday:1, tuesday:2, wednesday:3, thursday:4, friday:5, saturday:6, sunday:7 };
+
+      // Detect Layout B
+      const pageText = Array.from(document.querySelectorAll('strong, b, span, p, li'))
+        .map(el => el.children.length === 0 ? (el.innerText||'') : '').join(' ');
+      const isAmPmLayout = /\d:\d{2}\s*[ap]m\b/i.test(pageText);
+
+      // Parse "D. Month YYYY" from a full-date header → UTC ms
+      function parseDateMs(text) {
+        const m = text.match(/(\d{1,2})[\.\s]+([a-z]+)[\.\s]+(\d{4})/i);
+        if (!m) return null;
+        const mo = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11}[m[2].slice(0,3).toLowerCase()];
+        return (mo !== undefined) ? Date.UTC(+m[3], mo, +m[1]) : null;
+      }
+
+      function to24(timeStr, ampm) {
+        const parts = timeStr.split(':');
+        let h = +parts[0], mn = +(parts[1]||0);
+        if (ampm.toLowerCase() === 'pm' && h !== 12) h += 12;
+        if (ampm.toLowerCase() === 'am' && h === 12) h = 0;
+        return String(h).padStart(2,'0') + ':' + String(mn).padStart(2,'0');
+      }
+
+      // evDate from Node side e.g. "2026-06-18"
+      const evStartMs = evDate
+        ? Date.UTC(+evDate.slice(0,4), +evDate.slice(5,7)-1, +evDate.slice(8,10))
+        : null;
+
+      function isDayHeader(text) {
+        if (TIME_AMPM.test(text)) return false;
+        if (FULL_DATE.test(text))
+          return !/\b\d{1,2}:\d{2}/.test(text.replace(FULL_DATE, ''));
+        // Layout A: after stripping day name / digits / month words / punctuation → nothing left
+        const residual = text
+          .replace(DAY_NAMES, '')
+          .replace(/\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec\w*)\b/gi, '')
+          .replace(/\d+/g, '').replace(/[.,\-\s]/g, '').trim();
+        return DAY_NAMES.test(text) && residual.length === 0 && !/\b\d{1,2}:\d{2}/.test(text);
+      }
 
       const waves = [];
       let currentDay = 1;
-      let firstDayNum = null;
+      let firstDayNum = null; // Layout A anchor
 
-      // Collect all relevant leaf nodes in DOM order
       const candidates = Array.from(document.querySelectorAll('strong, b, span, p, li'))
         .filter(el => {
           if (el.children.length > 0) return false;
           const t = (el.innerText || '').trim();
-          return t && t.length < 150 &&
-            (DAY_NAMES.test(t) || TIME_RE.test(t) || TIME_SINGLE.test(t));
+          return t && t.length < 200 &&
+            (DAY_NAMES.test(t) || TIME_AMPM.test(t) || /\b\d{1,2}:\d{2}\b/.test(t));
         });
 
       for (const el of candidates) {
         const text = (el.innerText || '').trim();
 
-        // Day header detection — only pure day-name lines (no time on same line)
-        if (IS_DAY_HEADER(text)) {
-          const m = text.match(DAY_NAMES);
-          if (m) {
-            const dayNum = DAY_ORDER[m[1].toLowerCase()];
-            if (firstDayNum === null) {
-              firstDayNum = dayNum;
-              currentDay = 1;
-            } else {
-              currentDay = ((dayNum - firstDayNum + 7) % 7) + 1;
+        // ── Day header ──
+        if (isDayHeader(text)) {
+          if (evStartMs !== null && FULL_DATE.test(text)) {
+            // Layout B: compute exact day number from the actual calendar date
+            const hMs = parseDateMs(text);
+            if (hMs !== null) currentDay = Math.round((hMs - evStartMs) / 86400000) + 1;
+          } else {
+            // Layout A: weekday arithmetic
+            const m = text.match(DAY_NAMES);
+            if (m) {
+              const dn = DAY_ORDER[m[1].toLowerCase()];
+              if (firstDayNum === null) { firstDayNum = dn; currentDay = 1; }
+              else currentDay = ((dn - firstDayNum + 7) % 7) + 1;
             }
           }
           continue;
         }
 
-        // Wave entry: "HYROX MEN 10:00 – 13:50" or just "10:00 – 13:50"
-        const timeMatch = text.match(TIME_RE) || text.match(TIME_SINGLE);
-        if (!timeMatch) continue;
+        // Skip pre-event days (registration days before ev.date)
+        if (currentDay < 1) continue;
 
-        const time = timeMatch[1]; // start time only
-        // Zero-pad to HH:MM
-        const timePadded = time.replace(/^(\d):/, '0$1:');
-        // Category = everything before the first time token, cleaned up
-        let cat = text
-          .replace(TIME_RE, '').replace(TIME_SINGLE, '')
-          .replace(/[–\-]/g, '').replace(/\s+/g, ' ').trim();
-        // Strip trailing | and am/pm markers left by hyrox.com formatting
-        cat = cat.replace(/\s*\|\s*(am|pm)\s*$/i, '')
-                 .replace(/\s*\|\s*(monday|tuesday|wednesday|thursday|friday|saturday|sunday),?\s*$/i, '')
-                 .replace(/\s*\|+\s*$/, '')
-                 .replace(/:\s*$/, '')
-                 .trim();
-        // Discard entries where the "category" is just a day name or AM/PM section header
-        const isLayoutNoise = /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i.test(cat)
-          || /^(am|pm)$/i.test(cat);
-        if (isLayoutNoise) continue;
+        let timePadded, cat;
+
+        if (isAmPmLayout) {
+          // Try "Category | DayName, time am/pm" — bib-collection / inline-day format
+          const inlineM = text.match(/^(.+?)\|\s*(monday|tuesday|wednesday|thursday|friday|saturday|sunday),?\s+(\d{1,2}:\d{2})\s*(am|pm)\b/i);
+          if (inlineM) {
+            cat = inlineM[1].trim();
+            timePadded = to24(inlineM[3], inlineM[4]);
+            if (evStartMs !== null) {
+              const dn = DAY_ORDER[inlineM[2].toLowerCase()];
+              const utcToOrd = [7,1,2,3,4,5,6]; // JS getUTCDay 0=Sun→7
+              const evOrd = utcToOrd[new Date(evStartMs).getUTCDay()];
+              currentDay = ((dn - evOrd + 7) % 7) + 1;
+            }
+          } else {
+            // "Category | time am/pm" or bare "time am/pm"
+            const m = text.match(/^(.*?)\|\s*(\d{1,2}:\d{2})\s*(am|pm)\b/i)
+                     || text.match(/^(.*?)(\d{1,2}:\d{2})\s*(am|pm)\b/i);
+            if (!m) continue;
+            // Skip bare venue-opening lines (no pipe, no category text)
+            if (!m[1].trim() && !text.includes('|')) continue;
+            cat = m[1].trim();
+            timePadded = to24(m[2], m[3]);
+          }
+        } else {
+          // Layout A: extract first time token
+          const m = text.match(/\b(\d{1,2}:\d{2})/);
+          if (!m) continue;
+          timePadded = m[1].replace(/^(\d):/, '0$1:');
+          cat = text.replace(/\b\d{1,2}:\d{2}(?:\s*[–\-]\s*\d{1,2}:\d{2})?/g, '')
+                    .replace(/[–\-]/g, '').replace(/\s+/g, ' ').trim();
+        }
+
+        // Clean up category
+        cat = (cat || '')
+          .replace(/\s*\|\s*(am|pm)\s*$/i, '')
+          .replace(/\s*\|\s*(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday),?\s*$/i, '')
+          .replace(/\s*\|+\s*$/, '').replace(/:\s*$/, '').trim();
+
+        if (/^(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i.test(cat)) continue;
+        if (/^(?:am|pm)$/i.test(cat)) continue;
         if (!cat) cat = 'Open';
+        if (/fan village|partner activation|food|drinks|stage program|early registration|^registration$/i.test(cat)) continue;
+        if (cat.length > 60 || cat.split(/\s+/).length > 8) continue;
 
-        // Skip noise: long prose sentences that happen to contain a time
-        if (cat.length > 60 || cat.split(/\s+/).length > 7) continue;
-
-        // Skip duplicates (same day + category + time already added)
         const isDupe = waves.some(w => w.day === currentDay && w.time === timePadded && w.category === cat);
         if (!isDupe) waves.push({ day: currentDay, category: cat, time: timePadded });
       }
@@ -244,7 +302,7 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000) {
         waves,
         wavesConfirmed: waves.length > 0,
       };
-    }, { ticketRe: TICKET_BTN_RE.source, doFull: full });
+    }, { ticketRe: TICKET_BTN_RE.source, doFull: full, evDate });
 
   } catch (err) {
     console.warn(`    ⚠ Failed to probe ${venueUrl}: ${err.message}`);
@@ -407,7 +465,7 @@ function regenerateEventsDataJs() {
       // Do a full scrape if waves are missing, otherwise light probe
       const needWaves = !ev.waves || ev.waves.length === 0;
       process.stdout.write(`  ${ev.city.padEnd(22)}`);
-      const result = await probeEvent(page, ev.venueUrl, /* full= */ needWaves);
+      const result = await probeEvent(page, ev.venueUrl, /* full= */ needWaves, 12000, ev.date);
       if (!result) { console.log(' ⚠ skipped'); continue; }
 
       const prev        = ev.ticketsOnSale;

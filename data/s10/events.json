@@ -13,8 +13,84 @@
     "venueUrl": "https://hyrox.com/event/puma-hyrox-world-championships-stockholm/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "Elite 15 Women",
+        "time": "19:00"
+      },
+      {
+        "day": 1,
+        "category": "Elite 15 Men",
+        "time": "20:30"
+      },
+      {
+        "day": 2,
+        "category": "HYROX Men (Age Groups 60+)",
+        "time": "16:35"
+      },
+      {
+        "day": 2,
+        "category": "HYROX Women (Age Groups 60+)",
+        "time": "17:20"
+      },
+      {
+        "day": 2,
+        "category": "Elite 15 Pro Doubles Men",
+        "time": "21:35"
+      },
+      {
+        "day": 3,
+        "category": "HYROX Doubles Women (Age Groups 60+)",
+        "time": "19:20"
+      },
+      {
+        "day": 4,
+        "category": "HYROX Doubles Mixed",
+        "time": "07:30"
+      },
+      {
+        "day": 4,
+        "category": "Adaptive Invitational Women",
+        "time": "14:40"
+      },
+      {
+        "day": 4,
+        "category": "Adaptive Invitational Men",
+        "time": "16:30"
+      },
+      {
+        "day": 2,
+        "category": "HYROX Pro Men & Men (60+)",
+        "time": "18:30"
+      },
+      {
+        "day": 2,
+        "category": "HYROX Pro Women & Women (60+)",
+        "time": "19:15"
+      },
+      {
+        "day": 4,
+        "category": "HYROX Doubles Mixed",
+        "time": "14:45"
+      },
+      {
+        "day": 4,
+        "category": "ADAPTIVE Women",
+        "time": "17:30"
+      },
+      {
+        "day": 4,
+        "category": "ADAPTIVE Men",
+        "time": "19:00"
+      },
+      {
+        "day": 4,
+        "category": "Mixed Relay Invitational",
+        "time": "21:00"
+      }
+    ]
   },
   {
     "id": "s10-jakarta",
@@ -30,8 +106,129 @@
     "venueUrl": "https://hyrox.com/event/hyrox-jakarta/",
     "mapImg": "https://hyrox.com/wp-content/uploads/2026/06/ID-JKT-Floor-Plan_Bilingual.pdf",
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "09:00"
+      },
+      {
+        "day": 1,
+        "category": "14:10",
+        "time": "26:20"
+      },
+      {
+        "day": 1,
+        "category": "14:30",
+        "time": "26:40"
+      },
+      {
+        "day": 1,
+        "category": "15:10",
+        "time": "30:20"
+      },
+      {
+        "day": 1,
+        "category": "19:00",
+        "time": "31:30"
+      },
+      {
+        "day": 1,
+        "category": "19:40",
+        "time": "32:10"
+      },
+      {
+        "day": 2,
+        "category": "Open",
+        "time": "09:00"
+      },
+      {
+        "day": 2,
+        "category": "12:20",
+        "time": "25:50"
+      },
+      {
+        "day": 2,
+        "category": "14:30",
+        "time": "29:50"
+      },
+      {
+        "day": 2,
+        "category": "18:30",
+        "time": "30:40"
+      },
+      {
+        "day": 2,
+        "category": "19:00",
+        "time": "31:40"
+      },
+      {
+        "day": 2,
+        "category": "20:00",
+        "time": "32:20"
+      },
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "27:50"
+      },
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "28:30"
+      },
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "28:50"
+      },
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "32:30"
+      },
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "33:40"
+      },
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "33:55"
+      },
+      {
+        "day": 2,
+        "category": "Open",
+        "time": "26:20"
+      },
+      {
+        "day": 2,
+        "category": "Open",
+        "time": "28:00"
+      },
+      {
+        "day": 2,
+        "category": "Open",
+        "time": "32:00"
+      },
+      {
+        "day": 2,
+        "category": "Open",
+        "time": "32:50"
+      },
+      {
+        "day": 2,
+        "category": "Open",
+        "time": "33:50"
+      },
+      {
+        "day": 2,
+        "category": "Open",
+        "time": "34:05"
+      }
+    ]
   },
   {
     "id": "s10-sydney",
@@ -47,8 +244,244 @@
     "venueUrl": "https://hyrox.com/event/hyrox-sydney/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "08:00"
+      },
+      {
+        "day": 1,
+        "category": "09:30",
+        "time": "11:20"
+      },
+      {
+        "day": 1,
+        "category": "12:00",
+        "time": "25:40"
+      },
+      {
+        "day": 1,
+        "category": "13:50",
+        "time": "27:50"
+      },
+      {
+        "day": 1,
+        "category": "16:30",
+        "time": "28:50"
+      },
+      {
+        "day": 1,
+        "category": "17:10",
+        "time": "30:10"
+      },
+      {
+        "day": 1,
+        "category": "18:30",
+        "time": "31:10"
+      },
+      {
+        "day": 1,
+        "category": "09:00",
+        "time": "26:00"
+      },
+      {
+        "day": 1,
+        "category": "14:30",
+        "time": "30:20"
+      },
+      {
+        "day": 3,
+        "category": "Open",
+        "time": "08:00"
+      },
+      {
+        "day": 3,
+        "category": "10:50",
+        "time": "12:00"
+      },
+      {
+        "day": 3,
+        "category": "12:30",
+        "time": "25:40"
+      },
+      {
+        "day": 3,
+        "category": "14:10",
+        "time": "26:40"
+      },
+      {
+        "day": 3,
+        "category": "14:50",
+        "time": "27:30"
+      },
+      {
+        "day": 3,
+        "category": "16:10",
+        "time": "29:10"
+      },
+      {
+        "day": 3,
+        "category": "17:30",
+        "time": "31:20"
+      },
+      {
+        "day": 4,
+        "category": "Open",
+        "time": "08:00"
+      },
+      {
+        "day": 4,
+        "category": "12:10",
+        "time": "26:20"
+      },
+      {
+        "day": 4,
+        "category": "15:00",
+        "time": "29:50"
+      },
+      {
+        "day": 4,
+        "category": "18:20",
+        "time": "32:10"
+      },
+      {
+        "day": 5,
+        "category": "Open",
+        "time": "08:00"
+      },
+      {
+        "day": 5,
+        "category": "10:00",
+        "time": "11:30"
+      },
+      {
+        "day": 5,
+        "category": "12:10",
+        "time": "26:10"
+      },
+      {
+        "day": 5,
+        "category": "14:30",
+        "time": "29:50"
+      },
+      {
+        "day": 5,
+        "category": "18:20",
+        "time": "32:10"
+      },
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "28:20"
+      },
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "32:00"
+      },
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "12:00"
+      },
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "25:40"
+      },
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "32:55"
+      },
+      {
+        "day": 1,
+        "category": "Open",
+        "time": "33:55"
+      },
+      {
+        "day": 3,
+        "category": "Open",
+        "time": "12:00"
+      },
+      {
+        "day": 3,
+        "category": "Open",
+        "time": "33:55"
+      },
+      {
+        "day": 3,
+        "category": "Open",
+        "time": "28:20"
+      },
+      {
+        "day": 3,
+        "category": "Open",
+        "time": "28:50"
+      },
+      {
+        "day": 3,
+        "category": "Open",
+        "time": "29:40"
+      },
+      {
+        "day": 3,
+        "category": "Open",
+        "time": "31:20"
+      },
+      {
+        "day": 3,
+        "category": "Open",
+        "time": "33:05"
+      },
+      {
+        "day": 4,
+        "category": "Open",
+        "time": "12:00"
+      },
+      {
+        "day": 4,
+        "category": "Open",
+        "time": "25:40"
+      },
+      {
+        "day": 4,
+        "category": "Open",
+        "time": "33:55"
+      },
+      {
+        "day": 4,
+        "category": "Open",
+        "time": "28:20"
+      },
+      {
+        "day": 5,
+        "category": "Open",
+        "time": "12:00"
+      },
+      {
+        "day": 5,
+        "category": "Open",
+        "time": "25:40"
+      },
+      {
+        "day": 5,
+        "category": "Open",
+        "time": "28:20"
+      },
+      {
+        "day": 5,
+        "category": "Open",
+        "time": "32:00"
+      },
+      {
+        "day": 5,
+        "category": "Open",
+        "time": "33:55"
+      }
+    ]
   },
   {
     "id": "s10-hangzhou",
@@ -396,8 +829,24 @@
     "venueUrl": "https://hyrox.com/event/hyrox-washington-d-c-26-27/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 3,
+        "category": "1 Name Change per ticket allowed until",
+        "time": "07:59"
+      },
+      {
+        "day": 3,
+        "category": "100% refund available until",
+        "time": "07:59"
+      },
+      {
+        "day": 3,
+        "category": "50% refund available until",
+        "time": "07:59"
+      }
+    ]
   },
   {
     "id": "s10-tenerife",
@@ -602,8 +1051,24 @@
     "venueUrl": "https://hyrox.com/event/hyrox-salt-lake-city-26-27/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 3,
+        "category": "1 Name Change per ticket allowed until",
+        "time": "07:59"
+      },
+      {
+        "day": 3,
+        "category": "100% refund available until",
+        "time": "07:59"
+      },
+      {
+        "day": 3,
+        "category": "50% refund available until",
+        "time": "07:59"
+      }
+    ]
   },
   {
     "id": "s10-youngstars-maastricht",
@@ -847,8 +1312,24 @@
     "venueUrl": "https://hyrox.com/event/goodlife-hyrox-toronto-26-27/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "1 Name Change per ticket allowed until",
+        "time": "07:59"
+      },
+      {
+        "day": 1,
+        "category": "100% refund available until",
+        "time": "07:59"
+      },
+      {
+        "day": 1,
+        "category": "50% refund available until",
+        "time": "07:59"
+      }
+    ]
   },
   {
     "id": "s10-boston",
@@ -864,8 +1345,24 @@
     "venueUrl": "https://hyrox.com/event/hwpo-hyrox-boston-26-27/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 3,
+        "category": "1 Name Change per ticket allowed until",
+        "time": "07:59"
+      },
+      {
+        "day": 3,
+        "category": "100% refund available until",
+        "time": "07:59"
+      },
+      {
+        "day": 3,
+        "category": "50% refund available until",
+        "time": "07:59"
+      }
+    ]
   },
   {
     "id": "s10-geneva",
@@ -1027,8 +1524,24 @@
     "venueUrl": "https://hyrox.com/event/hyrox-tampa/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "1 Name Change per ticket allowed until",
+        "time": "07:59"
+      },
+      {
+        "day": 1,
+        "category": "100% refund available until",
+        "time": "07:59"
+      },
+      {
+        "day": 1,
+        "category": "50% refund available until",
+        "time": "07:59"
+      }
+    ]
   },
   {
     "id": "s10-birmingham",
@@ -1430,8 +1943,24 @@
     "venueUrl": "https://hyrox.com/event/hyrox-denver/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 2,
+        "category": "1 Name Change per ticket allowed until",
+        "time": "07:59"
+      },
+      {
+        "day": 2,
+        "category": "100% refund available until",
+        "time": "07:59"
+      },
+      {
+        "day": 2,
+        "category": "50% refund available until",
+        "time": "07:59"
+      }
+    ]
   },
   {
     "id": "s10-seoul",
@@ -1481,8 +2010,24 @@
     "venueUrl": "https://hyrox.com/event/hyrox-dallas/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 2,
+        "category": "1 Name Change per ticket allowed until",
+        "time": "07:59"
+      },
+      {
+        "day": 2,
+        "category": "100% refund available until",
+        "time": "07:59"
+      },
+      {
+        "day": 2,
+        "category": "50% refund available until",
+        "time": "07:59"
+      }
+    ]
   },
   {
     "id": "s10-pozna",
@@ -1549,8 +2094,14 @@
     "venueUrl": "https://hyrox.com/event/hyrox-utrecht/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 5,
+        "category": "Race Day starts as early as",
+        "time": "06:30"
+      }
+    ]
   },
   {
     "id": "s10-singapore",
@@ -1583,8 +2134,19 @@
     "venueUrl": "https://hyrox.com/event/virgin-active-hyrox-johannesburg-26-27/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "1 Name Change per ticket allowed until",
+        "time": "07:59"
+      },
+      {
+        "day": 1,
+        "category": "100% refund available until",
+        "time": "07:59"
+      }
+    ]
   },
   {
     "id": "s10-youngstars-utrecht",
@@ -1634,8 +2196,24 @@
     "venueUrl": "https://hyrox.com/event/hyrox-anaheim-26-27/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "1 Name Change per ticket allowed until",
+        "time": "07:59"
+      },
+      {
+        "day": 1,
+        "category": "100% refund available until",
+        "time": "07:59"
+      },
+      {
+        "day": 1,
+        "category": "50% refund available until",
+        "time": "07:59"
+      }
+    ]
   },
   {
     "id": "s10-milan",
@@ -1753,8 +2331,24 @@
     "venueUrl": "https://hyrox.com/event/hyrox-nashville/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "1 Name Change per ticket allowed until",
+        "time": "07:59"
+      },
+      {
+        "day": 1,
+        "category": "100% refund available until",
+        "time": "07:59"
+      },
+      {
+        "day": 1,
+        "category": "50% refund available until",
+        "time": "07:59"
+      }
+    ]
   },
   {
     "id": "s10-paris",
@@ -1787,8 +2381,14 @@
     "venueUrl": "https://hyrox.com/event/hyrox-gent/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "Race Day starts as early as",
+        "time": "06:30"
+      }
+    ]
   },
   {
     "id": "s10-helsinki",
@@ -1821,8 +2421,24 @@
     "venueUrl": "https://hyrox.com/event/hyrox-vancouver/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "1 Name Change per ticket allowed until",
+        "time": "07:59"
+      },
+      {
+        "day": 1,
+        "category": "100% refund available until",
+        "time": "07:59"
+      },
+      {
+        "day": 1,
+        "category": "50% refund available until",
+        "time": "07:59"
+      }
+    ]
   },
   {
     "id": "s10-youngstars-paris",
