@@ -1,11 +1,16 @@
 // ─── CORS PROXY FETCH + hyresult.com PARSER ──────────────────────────────────
 // Discovers new races for tracked athletes and imports splits automatically.
 
+// Each proxy entry: { make: url => proxyUrl, json: bool }
+// json:true  → response is JSON; extract .contents field
+// json:false → response is raw HTML text
 const CORS_PROXIES = [
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-  url => `https://thingproxy.freeboard.io/fetch/${url}`,
-  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`
+  // allorigins /get wraps in JSON {contents:"<html>..."} — most reliable
+  { make: url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, json: true },
+  // allorigins /raw returns text directly (fallback if /get is slow)
+  { make: url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, json: false },
+  // corsproxy.io — blocks hyresult.com but keep as final fallback
+  { make: url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`, json: false }
 ];
 
 const STATION_ORDER_FULL = [
@@ -15,8 +20,8 @@ const STATION_ORDER_FULL = [
 
 // ─── LOW-LEVEL FETCH ─────────────────────────────────────────────────────────
 async function proxyFetch(url, timeoutMs = 10000) {
-  for (const makeProxy of CORS_PROXIES) {
-    const proxyUrl = makeProxy(url);
+  for (const { make, json } of CORS_PROXIES) {
+    const proxyUrl = make(url);
     try {
       const ctrl = new AbortController();
       const tid = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -24,9 +29,15 @@ async function proxyFetch(url, timeoutMs = 10000) {
       clearTimeout(tid);
       // skip on any non-2xx (403 block, 429 rate limit, etc) and try next proxy
       if (!res.ok) continue;
-      const text = await res.text();
-      // sanity check — proxy returned a real HTML page, not an error JSON
-      if (text.length > 200 && !text.startsWith('{"')) return text;
+      let text;
+      if (json) {
+        const j = await res.json();
+        text = j.contents || '';
+      } else {
+        text = await res.text();
+      }
+      // sanity check — must look like a real HTML page
+      if (text.length > 200 && (text.includes('<') || text.includes('<!DOCTYPE'))) return text;
     } catch { /* try next proxy */ }
   }
   return null;
