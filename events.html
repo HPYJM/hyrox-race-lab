@@ -849,6 +849,8 @@
       gap: 8px;
       position: relative;
     }
+    /* When an image fills the card, the inner block wrapper needs full size */
+    .ev-modal-map > div { width: 100%; height: 100%; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .ev-modal-map img { width: 100%; height: 100%; object-fit: contain; display: block; }
     .ev-modal-map-none {
@@ -1790,7 +1792,8 @@
              📋 Open PDF ↗
            </a>`
         : '';
-      mapEl.innerHTML = `<img src="${ev.mapImgDirect}" alt="${ev.city} venue floor plan" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block;border-radius:6px">${pdfLink}`;
+      // Use a block wrapper so the img fills the card and the badge overlays it correctly
+      mapEl.innerHTML = `<div style="position:relative;width:100%;height:100%"><img src="${ev.mapImgDirect}" alt="${ev.city} venue floor plan" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block;border-radius:6px">${pdfLink}</div>`;
     } else if (ev.mapImg) {
       const isPdf = ev.mapImg.toLowerCase().endsWith('.pdf');
       const isLocal = !ev.mapImg.startsWith('http');
