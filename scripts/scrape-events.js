@@ -405,14 +405,13 @@ function regenerateEventsDataJs() {
     `const HYROX_S10_EVENTS = ${JSON.stringify(s10, null, 2)};\n`,
   ];
 
-  // Preserve the HYROX_SEASONS block from the existing file
-  const existing = fs.existsSync(JS_OUT) ? fs.readFileSync(JS_OUT, 'utf8') : '';
-  const seasonsMatch = existing.match(/(const HYROX_SEASONS\s*=[\s\S]+)/);
-  if (seasonsMatch) {
-    out.push(seasonsMatch[1]);
-  } else {
-    out.push('// ⚠ HYROX_SEASONS block not found — add it manually');
-  }
+  // Always emit the HYROX_SEASONS block (never rely on preserving it from existing file)
+  out.push(`const HYROX_SEASONS = {
+  10: { label: 'Season 10', years: '2026 \u2013 27', events: HYROX_S10_EVENTS },
+  9:  { label: 'Season 9',  years: '2025 \u2013 26', events: HYROX_EVENTS },
+  8:  { label: 'Season 8',  years: '2024 \u2013 25', events: HYROX_S8_EVENTS },
+  7:  { label: 'Season 7',  years: '2023 \u2013 24', events: HYROX_S7_EVENTS },
+};\n`);
 
   fs.writeFileSync(JS_OUT, out.join('\n'), 'utf8');
   console.log('\n✓ Regenerated js/events-data.js');
