@@ -1,4 +1,4 @@
-// AUTO-GENERATED
+﻿// AUTO-GENERATED
 
 const HYROX_S7_EVENTS = [];
 
@@ -181,9 +181,9 @@ const HYROX_S10_EVENTS = [
   {
     "id": "s10-sydney",
     "city": "Sydney",
-    "country": "TBC",
-    "flag": "�🇺",
-    "venue": "TBC",
+    "country": "Australia",
+    "flag": "🇦🇺",
+    "venue": "ICC Sydney",
     "date": "2026-07-01",
     "dateLabel": "1. Jul. 2026",
     "status": "upcoming",
