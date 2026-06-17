@@ -326,7 +326,7 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000, evDat
         if (/^(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i.test(cat)) continue;
         if (/^(?:am|pm)$/i.test(cat)) continue;
         if (!cat) cat = 'Open';
-        if (/fan village|partner activation|food|drinks|stage program|early registration|^registration$/i.test(cat)) continue;
+        if (/fan village|partner activation|food|drinks|stage program|early registration|^registration$|name change|refund available|% refund/i.test(cat)) continue;
         if (cat.length > 60 || cat.split(/\s+/).length > 8) continue;
 
         const isDupe = waves.some(w => w.day === currentDay && w.time === timePadded && w.category === cat);

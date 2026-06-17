@@ -664,24 +664,8 @@
     "venueUrl": "https://hyrox.com/event/hyrox-washington-d-c-26-27/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": true,
-    "waves": [
-      {
-        "day": 3,
-        "category": "1 Name Change per ticket allowed until",
-        "time": "07:59"
-      },
-      {
-        "day": 3,
-        "category": "100% refund available until",
-        "time": "07:59"
-      },
-      {
-        "day": 3,
-        "category": "50% refund available until",
-        "time": "07:59"
-      }
-    ]
+    "wavesConfirmed": false,
+    "waves": []
   },
   {
     "id": "s10-tenerife",
