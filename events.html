@@ -851,6 +851,36 @@
     }
     /* When an image fills the card, the inner block wrapper needs full size */
     .ev-modal-map > div { width: 100%; height: 100%; }
+    /* Expand icon button on the map card */
+    .ev-map-expand-btn {
+      position: absolute; bottom: 8px; right: 8px; z-index: 2;
+      width: 32px; height: 32px;
+      background: rgba(0,0,0,.72); border: none; border-radius: 8px;
+      color: #ffe500; font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(4px); transition: background .15s, transform .15s;
+      line-height: 1;
+    }
+    .ev-map-expand-btn:hover { background: rgba(255,229,0,.18); transform: scale(1.12); }
+    /* Map lightbox overlay */
+    #mapLightbox {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,.88); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+    }
+    #mapLightbox.open { display: flex; }
+    #mapLightbox img {
+      max-width: 80vw; max-height: 80vh;
+      object-fit: contain; border-radius: 10px;
+      box-shadow: 0 8px 48px rgba(0,0,0,.7);
+    }
+    #mapLightboxClose {
+      position: absolute; top: 20px; right: 24px;
+      background: none; border: none; color: #fff;
+      font-size: 1.8rem; cursor: pointer; opacity: .7; line-height: 1;
+      transition: opacity .15s;
+    }
+    #mapLightboxClose:hover { opacity: 1; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .ev-modal-map img { width: 100%; height: 100%; object-fit: contain; display: block; }
     .ev-modal-map-none {
@@ -1042,6 +1072,12 @@
   </div>
   <p class="tl-scroll-hint" id="tlScrollHint" style="display:none">Scroll ↔ to navigate · Click any event to open</p>
 </main>
+
+<!-- ── MAP LIGHTBOX ─────────────────────────────────────────────────────── -->
+<div id="mapLightbox" role="dialog" aria-label="Venue map fullscreen">
+  <button id="mapLightboxClose" aria-label="Close map">✕</button>
+  <img id="mapLightboxImg" src="" alt="Venue floor plan">
+</div>
 
 <!-- ── EVENT MODAL ────────────────────────────────────────────────────────── -->
 <div class="ev-modal-overlay" id="evModalOverlay">
@@ -1787,15 +1823,15 @@
     const mapEl = document.getElementById('evModalMap');
     mapEl.style.position = 'relative';
     if (ev.mapImgDirect) {
-      // PNG image (converted from PDF) — show inline, PDF link as overlay badge
-      const pdfLink = ev.mapImg && ev.mapImg.toLowerCase().endsWith('.pdf')
-        ? `<a href="${ev.mapImg}" target="_blank" rel="noopener noreferrer"
-             style="position:absolute;bottom:8px;right:8px;z-index:2;background:rgba(0,0,0,.72);color:#ffe500;font-size:.7rem;font-weight:700;padding:5px 11px;border-radius:12px;text-decoration:none;backdrop-filter:blur(4px)">
-             📋 Open PDF ↗
-           </a>`
-        : '';
-      // Use a block wrapper so the img fills the card and the badge overlays it correctly
-      mapEl.innerHTML = `<div style="position:relative;width:100%;height:100%"><img src="${ev.mapImgDirect}" alt="${ev.city} venue floor plan" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block;border-radius:6px">${pdfLink}</div>`;
+      // PNG image — show inline with expand button
+      const expandBtn = `<button class="ev-map-expand-btn" id="evMapExpandBtn" aria-label="Expand map" title="View full size">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 6V1h5M15 6V1h-5M1 10v5h5M15 10v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>`;
+      // Use a block wrapper so the img fills the card and the button overlays it correctly
+      mapEl.innerHTML = `<div style="position:relative;width:100%;height:100%"><img src="${ev.mapImgDirect}" alt="${ev.city} venue floor plan" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block;border-radius:6px">${expandBtn}</div>`;
+      document.getElementById('evMapExpandBtn').addEventListener('click', () => openMapLightbox(ev.mapImgDirect, ev.city));
     } else if (ev.mapImg) {
       const isPdf = ev.mapImg.toLowerCase().endsWith('.pdf');
       const isLocal = !ev.mapImg.startsWith('http');
@@ -1915,7 +1951,30 @@
 
   document.getElementById('evModalClose').addEventListener('click', closeModal);
   overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (document.getElementById('mapLightbox').classList.contains('open')) closeMapLightbox();
+      else closeModal();
+    }
+  });
+
+  // ── Map lightbox ──────────────────────────────────────────────────────────
+  function openMapLightbox(src, city) {
+    const lb  = document.getElementById('mapLightbox');
+    const img = document.getElementById('mapLightboxImg');
+    img.src = src;
+    img.alt = city + ' venue floor plan';
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMapLightbox() {
+    document.getElementById('mapLightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('mapLightboxClose').addEventListener('click', closeMapLightbox);
+  document.getElementById('mapLightbox').addEventListener('click', e => {
+    if (e.target === document.getElementById('mapLightbox')) closeMapLightbox();
+  });
 
   // Sync heading to the default season on load
   (function initHeading() {
