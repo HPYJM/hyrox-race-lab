@@ -117,16 +117,43 @@ async function discoverEventUrls(page) {
 
 async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000, evDate = null) {
   try {
-    await page.goto(venueUrl, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
-    await page.waitForTimeout(1500);
+    // For full scrapes (wave data needed), wait for network to settle so JS-rendered
+    // content (wave schedules, accordions) is fully in the DOM.
+    const waitUntil = full ? 'networkidle' : 'domcontentloaded';
+    const navTimeout = full ? Math.max(timeoutMs, 20000) : timeoutMs;
+    await page.goto(venueUrl, { waitUntil, timeout: navTimeout });
+    await page.waitForTimeout(full ? 3000 : 2000);
 
-    // Expand all accordion / tab sections so wave data is in the DOM
+    // Expand all accordion / tab sections so wave data is in the DOM.
+    // Strategy: (1) click any collapsed accordion triggers, (2) force-show hidden panels,
+    // (3) open <details> elements. Handles both JS-click-driven and CSS-only accordions.
     await page.evaluate(() => {
-      document.querySelectorAll('[class*="acc_tab"], details').forEach(el => {
-        if (el.tagName === 'DETAILS') el.open = true;
-        else el.style.display = 'block';
+      // Click accordion headers / triggers that are likely collapsed
+      document.querySelectorAll(
+        '[class*="accordion"] [class*="title"], [class*="accordion"] [class*="header"], ' +
+        '[class*="acc_tab"], [class*="wp-accordion"] .wp-accordion-title, ' +
+        '[class*="toggle"] > [class*="title"], [class*="toggle"] > [class*="header"], ' +
+        'button[aria-expanded="false"], [role="tab"][aria-selected="false"]'
+      ).forEach(el => { try { el.click(); } catch(e) {} });
+
+      // Force-show any hidden panels (CSS display:none or visibility:hidden)
+      document.querySelectorAll(
+        '[class*="accordion"] [class*="content"], [class*="accordion"] [class*="panel"], ' +
+        '[class*="acc_"] [class*="content"], [class*="wp-accordion-content"]'
+      ).forEach(el => {
+        el.style.display = 'block';
+        el.style.visibility = 'visible';
+        el.style.maxHeight = 'none';
+        el.style.overflow = 'visible';
+        el.hidden = false;
       });
+
+      // Open <details> elements
+      document.querySelectorAll('details').forEach(el => { el.open = true; });
     });
+
+    // Wait for any newly-revealed async content to render
+    await page.waitForTimeout(800);
 
     return await page.evaluate(({ ticketRe, doFull, evDate }) => {
       const elems      = Array.from(document.querySelectorAll('button, a'));
@@ -233,16 +260,19 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000, evDat
         // For non-leaf elements (like <p> containing a <strong>), use full innerText
         // only if it looks like "TIME CATEGORY" (time-range-first layout)
         const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
-        if (!t || t.length > 300) return;
+        if (!t || t.length > 800) return;
         if (seenTexts.has(t)) return;
-        // Include if: leaf element with time/day, OR block with time-range + category text
+        // Include if: leaf element with time/day, OR block with time-range + category text,
+        // OR Layout E: paragraph block starting with a day name + "HYROX CAT: HH:MM" entries
         const isLeaf = el.children.length === 0;
         const hasTime = DAY_NAMES.test(t) || TIME_AMPM.test(t) || /\b\d{1,2}:\d{2}\b/.test(t);
         const isTimeRangeBlock = !isLeaf && /^\d{1,2}:\d{2}.*[–\-].*\d{1,2}:\d{2}/.test(t) && t.length > 20;
+        // Layout E: "Saturday 4 July HYROX MEN: 08:00 – 13:10 HYROX PRO WOMEN: 14:10 ..."
+        const isScheduleBlock = !isLeaf && DAY_NAMES.test(t.split(/\s+/)[0]) && /[A-Z][A-Z\s']+?:\s*\d{1,2}:\d{2}/.test(t);
         if (!hasTime) return;
-        if (!isLeaf && !isTimeRangeBlock) return;
+        if (!isLeaf && !isTimeRangeBlock && !isScheduleBlock) return;
         seenTexts.add(t);
-        candidates.push({ text: t, isBlock: isTimeRangeBlock });
+        candidates.push({ text: t, isBlock: isTimeRangeBlock, isScheduleBlock });
       });
 
       for (const entry of candidates) {
@@ -267,6 +297,35 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000, evDat
 
         // Skip pre-event days (registration days before ev.date)
         if (currentDay < 1) continue;
+
+        // Layout E: "DayName D Month HYROX CAT: HH:MM – HH:MM HYROX CAT2: HH:MM ..."
+        if (entry.isScheduleBlock) {
+          // Extract the leading day name to set currentDay
+          const dayM = text.match(DAY_NAMES);
+          if (dayM) {
+            const dn = DAY_ORDER[dayM[1].toLowerCase()];
+            if (evStartMs !== null) {
+              const utcToOrd = [7,1,2,3,4,5,6]; // JS getUTCDay 0=Sun→7
+              const evOrd = utcToOrd[new Date(evStartMs).getUTCDay()];
+              currentDay = ((dn - evOrd + 7) % 7) + 1;
+            } else {
+              if (firstDayNum === null) { firstDayNum = dn; currentDay = 1; }
+              else currentDay = ((dn - firstDayNum + 7) % 7) + 1;
+            }
+          }
+          // Extract each "CATEGORY: HH:MM" entry
+          const schedRe = /([A-Z][A-Z\s\u2018\u2019'']+?):\s*(\d{1,2}:\d{2})/g;
+          let sm;
+          while ((sm = schedRe.exec(text)) !== null) {
+            const cat = sm[1].trim().replace(/\s+/g, ' ');
+            const tp  = sm[2].replace(/^(\d):/, '0$1:');
+            if (!cat || cat.length > 60 || DAY_NAMES.test(cat)) continue;
+            if (/^(?:race schedule|provisional)$/i.test(cat)) continue;
+            const isDupe = waves.some(w => w.day === currentDay && w.time === tp && w.category === cat);
+            if (!isDupe) waves.push({ day: currentDay, category: cat, time: tp });
+          }
+          continue;
+        }
 
         // Layout D: block element containing full day schedule text
         // e.g. "08:00AM – 09:10AM HYROX DOUBLES MEN OPEN12:00 – 13:40PM HYROX DOUBLES WOMEN OPEN"

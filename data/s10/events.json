@@ -332,8 +332,69 @@
     "venueUrl": "https://hyrox.com/event/hyrox-hangzhou/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "HYROX MEN",
+        "time": "08:00"
+      },
+      {
+        "day": 1,
+        "category": "HYROX PRO DOUBLES WOMEN",
+        "time": "13:30"
+      },
+      {
+        "day": 1,
+        "category": "HYROX PRO WOMEN",
+        "time": "14:10"
+      },
+      {
+        "day": 1,
+        "category": "HYROX DOUBLES MIXED",
+        "time": "15:00"
+      },
+      {
+        "day": 1,
+        "category": "HYROX PRO DOUBLES MEN",
+        "time": "18:20"
+      },
+      {
+        "day": 1,
+        "category": "HYROX PRO MEN",
+        "time": "19:20"
+      },
+      {
+        "day": 2,
+        "category": "HYROX DOUBLES WOMEN",
+        "time": "08:00"
+      },
+      {
+        "day": 2,
+        "category": "HYROX WOMEN",
+        "time": "11:00"
+      },
+      {
+        "day": 2,
+        "category": "HYROX DOUBLES MEN",
+        "time": "13:50"
+      },
+      {
+        "day": 2,
+        "category": "HYROX MEN’S RELAY",
+        "time": "17:30"
+      },
+      {
+        "day": 2,
+        "category": "HYROX MIXED RELAY",
+        "time": "18:25"
+      },
+      {
+        "day": 2,
+        "category": "HYROX WOMEN’S RELAY",
+        "time": "19:55"
+      }
+    ]
   },
   {
     "id": "s10-abu-dhabi",
@@ -664,8 +725,144 @@
     "venueUrl": "https://hyrox.com/event/hyrox-washington-d-c-26-27/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "ADAPTIVE MEN",
+        "time": "08:00"
+      },
+      {
+        "day": 1,
+        "category": "HYROX DOUBLES MEN",
+        "time": "10:40"
+      },
+      {
+        "day": 1,
+        "category": "HYROX DOUBLES WOMEN",
+        "time": "13:40"
+      },
+      {
+        "day": 1,
+        "category": "ADAPTIVE WOMEN",
+        "time": "15:40"
+      },
+      {
+        "day": 1,
+        "category": "HYROX DOUBLES MIXED",
+        "time": "18:10"
+      },
+      {
+        "day": 2,
+        "category": "ADAPTIVE MEN",
+        "time": "08:00"
+      },
+      {
+        "day": 2,
+        "category": "HYROX PRO MEN",
+        "time": "09:50"
+      },
+      {
+        "day": 2,
+        "category": "HYROX PRO WOMEN",
+        "time": "12:30"
+      },
+      {
+        "day": 2,
+        "category": "HYROX DOUBLES MEN",
+        "time": "14:00"
+      },
+      {
+        "day": 2,
+        "category": "HYROX DOUBLES WOMEN",
+        "time": "15:40"
+      },
+      {
+        "day": 2,
+        "category": "ADAPTIVE WOMEN",
+        "time": "16:20"
+      },
+      {
+        "day": 2,
+        "category": "HYROX DOUBLES MIXED",
+        "time": "17:50"
+      },
+      {
+        "day": 2,
+        "category": "HYROX MEN’S RELAY",
+        "time": "19:40"
+      },
+      {
+        "day": 2,
+        "category": "HYROX MIXED RELAY",
+        "time": "20:00"
+      },
+      {
+        "day": 2,
+        "category": "HYROX WOMEN’S RELAY",
+        "time": "20:20"
+      },
+      {
+        "day": 3,
+        "category": "ADAPTIVE MEN",
+        "time": "08:00"
+      },
+      {
+        "day": 3,
+        "category": "HYROX DOUBLES MIXED",
+        "time": "12:50"
+      },
+      {
+        "day": 3,
+        "category": "HYROX PRO DOUBLES WOMEN",
+        "time": "17:30"
+      },
+      {
+        "day": 3,
+        "category": "HYROX PRO DOUBLES MEN",
+        "time": "19:00"
+      },
+      {
+        "day": 4,
+        "category": "HYROX DOUBLES WOMEN",
+        "time": "08:00"
+      },
+      {
+        "day": 4,
+        "category": "ADAPTIVE WOMEN",
+        "time": "12:20"
+      },
+      {
+        "day": 4,
+        "category": "HYROX DOUBLES MEN",
+        "time": "16:10"
+      },
+      {
+        "day": 5,
+        "category": "ADAPTIVE MEN",
+        "time": "08:00"
+      },
+      {
+        "day": 5,
+        "category": "HYROX DOUBLES MEN",
+        "time": "10:30"
+      },
+      {
+        "day": 5,
+        "category": "HYROX DOUBLES WOMEN",
+        "time": "13:10"
+      },
+      {
+        "day": 5,
+        "category": "ADAPTIVE WOMEN",
+        "time": "15:00"
+      },
+      {
+        "day": 5,
+        "category": "HYROX DOUBLES MIXED",
+        "time": "17:20"
+      }
+    ]
   },
   {
     "id": "s10-tenerife",
