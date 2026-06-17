@@ -510,25 +510,24 @@ function initSyncBanner() {
 // ─── NEWS TICKER ─────────────────────────────────────────────────────────────
 function initTicker() {
   const track = document.getElementById('tickerTrack');
+  const bar   = track && track.closest('.ticker-bar');
   if (!track) return;
   track.innerHTML += track.innerHTML;
-  let pos = 0;
-  let rafId = null;
+  let pos = 0, paused = false;
   function tick() {
-    pos += 0.5;
-    if (pos >= track.scrollWidth / 2) pos -= track.scrollWidth / 2;
-    track.style.transform = 'translateX(' + (-pos) + 'px)';
-    rafId = requestAnimationFrame(tick);
-  }
-  // Pause when tab is hidden to save CPU/battery
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    } else {
-      if (!rafId) rafId = requestAnimationFrame(tick);
+    if (!paused) {
+      pos += 0.5;
+      if (pos >= track.scrollWidth / 2) pos -= track.scrollWidth / 2;
+      track.style.transform = 'translateX(' + (-pos) + 'px)';
     }
-  });
-  rafId = requestAnimationFrame(tick);
+    requestAnimationFrame(tick);
+  }
+  document.addEventListener('visibilitychange', () => { paused = document.hidden; });
+  if (bar) {
+    bar.addEventListener('mouseenter', () => { paused = true; });
+    bar.addEventListener('mouseleave', () => { paused = false; });
+  }
+  requestAnimationFrame(tick);
 }
 // ─── NEWS SECTION ───────────────────────────────────────────────────────────
 async function initNews() {

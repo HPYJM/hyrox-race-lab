@@ -1099,17 +1099,25 @@
 <script src="js/fetcher.js"></script>
 <script>
 (function () {
-  // Ticker — endless RAF scroll, no CSS animation restart
+  // Ticker — endless RAF scroll, pause on hover / hidden tab
   (function () {
     const track = document.getElementById('tickerTrack');
+    const bar   = track && track.closest('.ticker-bar');
     if (!track) return;
     track.innerHTML += track.innerHTML;
-    let pos = 0;
+    let pos = 0, paused = false;
     function tick() {
-      pos += 0.5;
-      if (pos >= track.scrollWidth / 2) pos -= track.scrollWidth / 2;
-      track.style.transform = 'translateX(' + (-pos) + 'px)';
+      if (!paused) {
+        pos += 0.5;
+        if (pos >= track.scrollWidth / 2) pos -= track.scrollWidth / 2;
+        track.style.transform = 'translateX(' + (-pos) + 'px)';
+      }
       requestAnimationFrame(tick);
+    }
+    document.addEventListener('visibilitychange', () => { paused = document.hidden; });
+    if (bar) {
+      bar.addEventListener('mouseenter', () => { paused = true; });
+      bar.addEventListener('mouseleave', () => { paused = false; });
     }
     requestAnimationFrame(tick);
   })();
