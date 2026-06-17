@@ -1834,29 +1834,40 @@
       document.getElementById('evMapExpandBtn').addEventListener('click', () => openMapLightbox(ev.mapImgDirect, ev.city));
     } else if (ev.mapImg) {
       const isPdf = ev.mapImg.toLowerCase().endsWith('.pdf');
-      const isLocal = !ev.mapImg.startsWith('http');
-      // No PNG yet — fall back to button card (works on both file:// and http)
+      // Has a map file (PDF) but no PNG yet — show download button
       mapEl.innerHTML = `
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center;height:100%">
           <div style="font-size:2.8rem;line-height:1">${isPdf ? '📋' : '🗺'}</div>
           <div style="font-size:.8rem;color:rgba(255,255,255,.5);line-height:1.5">
             <strong style="color:rgba(255,255,255,.85);display:block;margin-bottom:4px">Venue Floor Plan</strong>
-            ${isLocal ? '<span style="color:#4caf50;font-size:.7rem">✓ Saved locally</span>' : (isPdf ? 'Official PDF floor plan available' : 'Venue map available')}
+            ${isPdf ? 'Official PDF floor plan available' : 'Venue map available'}
           </div>
           <a href="${ev.mapImg}" target="_blank" rel="noopener noreferrer"
              style="display:inline-flex;align-items:center;gap:6px;background:#ffe500;color:#0f0f13;font-size:.78rem;font-weight:700;padding:8px 16px;border-radius:20px;text-decoration:none;letter-spacing:.02em">
             ${isPdf ? 'Open Floor Plan PDF ↗' : 'View Map ↗'}
           </a>
         </div>`;
+    } else {
+      // No map available yet — polished placeholder using the city hero image as a blurred bg
+      const bgImg = cityImg(ev);
+      const bgStyle = bgImg
+        ? `background:url('${bgImg}') center/cover no-repeat;`
+        : 'background:rgba(255,255,255,.03);';
       mapEl.innerHTML = `
-        <div class="ev-modal-map-none">
-          <span class="map-icon">🗺</span>
-          Venue map on official event page
-          <a class="ev-modal-map-pdf-link" href="${ev.venueUrl}" target="_blank" rel="noopener noreferrer">
-            Open event page ↗
-          </a>
+        <div style="position:relative;width:100%;height:100%;${bgStyle}border-radius:10px;overflow:hidden">
+          <div style="position:absolute;inset:0;backdrop-filter:blur(18px) brightness(.35);background:rgba(0,0,0,.45)"></div>
+          <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;height:100%;text-align:center;padding:20px">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+              <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+            </svg>
+            <span style="font-size:.72rem;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase">Floor plan not yet published</span>
+            <a href="${ev.venueUrl}" target="_blank" rel="noopener noreferrer"
+               style="margin-top:4px;font-size:.7rem;color:rgba(255,229,0,.6);text-decoration:none;letter-spacing:.03em">
+              Check official event page ↗
+            </a>
+          </div>
         </div>`;
-    }
 
     // ── Info panel (left) — Laps to Run ──
     const infoEl = document.getElementById('evModalInfoPanel');
