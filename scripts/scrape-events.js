@@ -193,15 +193,19 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000, evDat
         ? Date.UTC(+evDate.slice(0,4), +evDate.slice(5,7)-1, +evDate.slice(8,10))
         : null;
 
+      // Layout D day header: "WEDNESDAY | 1 JULY" or "FRIDAY | 3 JULY"
+      const PIPE_DATE = /^(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s*\|\s*\d{1,2}\s+\w+/i;
+
       function isDayHeader(text) {
         if (TIME_AMPM.test(text)) return false;
+        if (PIPE_DATE.test(text)) return true;
         if (FULL_DATE.test(text))
           return !/\b\d{1,2}:\d{2}/.test(text.replace(FULL_DATE, ''));
         // Layout A: after stripping day name / digits / month words / punctuation → nothing left
         const residual = text
           .replace(DAY_NAMES, '')
           .replace(/\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec\w*)\b/gi, '')
-          .replace(/\d+/g, '').replace(/[.,\-\s]/g, '').trim();
+          .replace(/\d+/g, '').replace(/[.,\-\s|]/g, '').trim();
         return DAY_NAMES.test(text) && residual.length === 0 && !/\b\d{1,2}:\d{2}/.test(text);
       }
 
@@ -209,17 +213,29 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000, evDat
       let currentDay = 1;
       let firstDayNum = null; // Layout A anchor
 
-      const candidates = Array.from(document.querySelectorAll('strong, b, span, p, li'))
-        .filter(el => {
-          if (el.children.length > 0) return false;
-          const t = (el.innerText || '').trim();
-          return t && t.length < 200 &&
-            (DAY_NAMES.test(t) || TIME_AMPM.test(t) || /\b\d{1,2}:\d{2}\b/.test(t));
-        });
+      // Build candidate list: leaf elements PLUS parent blocks where the block
+      // contains a time range immediately followed by a category name
+      // (e.g. <p><strong>08:00AM – 09:10AM</strong> HYROX DOUBLES MEN OPEN</p>)
+      const seenTexts = new Set();
+      const candidates = [];
+      document.querySelectorAll('strong, b, span, p, li').forEach(el => {
+        // For non-leaf elements (like <p> containing a <strong>), use full innerText
+        // only if it looks like "TIME CATEGORY" (time-range-first layout)
+        const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+        if (!t || t.length > 300) return;
+        if (seenTexts.has(t)) return;
+        // Include if: leaf element with time/day, OR block with time-range + category text
+        const isLeaf = el.children.length === 0;
+        const hasTime = DAY_NAMES.test(t) || TIME_AMPM.test(t) || /\b\d{1,2}:\d{2}\b/.test(t);
+        const isTimeRangeBlock = !isLeaf && /^\d{1,2}:\d{2}.*[–\-].*\d{1,2}:\d{2}/.test(t) && t.length > 20;
+        if (!hasTime) return;
+        if (!isLeaf && !isTimeRangeBlock) return;
+        seenTexts.add(t);
+        candidates.push({ text: t, isBlock: isTimeRangeBlock });
+      });
 
-      for (const el of candidates) {
-        const text = (el.innerText || '').trim();
-
+      for (const entry of candidates) {
+        const text = entry.text;
         // ── Day header ──
         if (isDayHeader(text)) {
           if (evStartMs !== null && FULL_DATE.test(text)) {
@@ -240,6 +256,25 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000, evDat
 
         // Skip pre-event days (registration days before ev.date)
         if (currentDay < 1) continue;
+
+        // Layout D: block element containing full day schedule text
+        // e.g. "08:00AM – 09:10AM HYROX DOUBLES MEN OPEN12:00 – 13:40PM HYROX DOUBLES WOMEN OPEN"
+        if (entry.isBlock) {
+          const blockRe = /(\d{1,2}:\d{2})\s*(?:am|pm)?\s*[\u2013\-]\s*\d{1,2}:\d{2}\s*(?:am|pm)?\s+([A-Z][^\d]+?)(?=\d{1,2}:\d{2}|$)/gi;
+          let bm;
+          while ((bm = blockRe.exec(text)) !== null) {
+            const startTime = bm[1].replace(/^(\d):/, '0$1:');
+            const ampmM = text.slice(bm.index).match(/^\d{1,2}:\d{2}\s*(am|pm)/i);
+            let tp = startTime;
+            if (ampmM) tp = to24(startTime, ampmM[1]);
+            const c = bm[2].trim().replace(/\s+/g,' ');
+            if (c && c.length < 60 && !/fan village|relay.*men.*women|early reg/i.test(c)) {
+              const isDupe = waves.some(w => w.day === currentDay && w.time === tp && w.category === c);
+              if (!isDupe) waves.push({ day: currentDay, category: c, time: tp });
+            }
+          }
+          continue;
+        }
 
         let timePadded, cat;
 
