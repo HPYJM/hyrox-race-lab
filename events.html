@@ -763,80 +763,60 @@
       align-items: start;
     }
 
-    /* Info panel (left) */
+    /* Info panel (left) — Laps to Run */
     .ev-modal-info-panel {
       display: flex;
       flex-direction: column;
       gap: 0;
     }
-    .ev-info-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin: 10px 0 14px;
-    }
-    .ev-info-stat {
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 10px;
-      padding: 10px 8px 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-    }
-    .ev-info-stat-val {
-      font-size: 1.35rem;
-      font-weight: 800;
-      color: #ffe500;
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-    }
-    .ev-info-stat-lbl {
-      font-size: .58rem;
-      font-weight: 600;
-      letter-spacing: .08em;
+    .ev-laps-heading {
+      font-size: .62rem;
+      font-weight: 900;
+      letter-spacing: .14em;
       text-transform: uppercase;
       color: rgba(255,255,255,.35);
+      margin: 0 0 10px;
     }
-    .ev-info-divider {
-      height: 1px;
-      background: rgba(255,255,255,.07);
-      margin: 4px 0 12px;
+    .ev-laps-table {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px;
+      overflow: hidden;
     }
-    .ev-info-cats { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
-    .ev-info-cat-row {
+    .ev-laps-row {
+      display: flex;
+      align-items: stretch;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .ev-laps-row:last-child { border-bottom: none; }
+    .ev-laps-run {
+      padding: 9px 10px;
+      font-size: .68rem;
+      font-weight: 700;
+      color: rgba(255,255,255,.55);
+      background: rgba(255,255,255,.03);
+      border-right: 1px solid rgba(255,255,255,.06);
+      white-space: nowrap;
+      min-width: 74px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      padding: 5px 10px;
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(255,255,255,.06);
-      border-radius: 8px;
     }
-    .ev-info-cat-name {
-      font-size: .68rem;
-      color: rgba(255,255,255,.7);
-      line-height: 1.3;
-      flex: 1;
+    .ev-laps-rule {
+      padding: 9px 10px;
+      font-size: .7rem;
+      color: rgba(255,255,255,.85);
+      line-height: 1.35;
+      display: flex;
+      align-items: center;
     }
-    .ev-info-cat-count {
-      font-size: .72rem;
-      font-weight: 800;
+    .ev-laps-rule strong {
       color: #ffe500;
-      background: rgba(255,229,0,.08);
-      border-radius: 6px;
-      padding: 1px 6px;
-      white-space: nowrap;
-      flex-shrink: 0;
+      font-weight: 800;
     }
-    .ev-info-no-waves {
-      font-size: .72rem;
-      color: rgba(255,255,255,.3);
-      margin-top: 8px;
-      text-align: center;
-      line-height: 1.6;
+    .ev-laps-tba {
+      color: rgba(255,255,255,.25);
+      font-style: italic;
     }
 
     /* Right column (map + wave timeline stacked) */
@@ -1834,49 +1814,28 @@
         </div>`;
     }
 
-    // ── Info panel (left) ──
+    // ── Info panel (left) — Laps to Run ──
     const infoEl = document.getElementById('evModalInfoPanel');
     const waveDays = ev.waves && ev.waves.length
       ? [...new Set(ev.waves.map(w => w.day))].sort((a, b) => a - b) : [];
-    const catCounts = {};
-    (ev.waves || []).forEach(w => {
-      let cat = (w.category || 'Open')
-        .replace(/\s*\|\s*(am|pm)\s*$/i, '')
-        .replace(/\s*\|+\s*$/, '')
-        .replace(/:\s*$/, '')
-        .trim();
-      if (/^am$/i.test(cat)) cat = 'Morning';
-      if (/^pm$/i.test(cat)) cat = 'Afternoon';
-      catCounts[cat] = (catCounts[cat] || 0) + 1;
-    });
-    const catEntries = Object.entries(catCounts);
-    let infoHtml = `
-      <p class="ev-modal-section-title">Event Info</p>
-      <div class="ev-info-stats">
-        <div class="ev-info-stat">
-          <span class="ev-info-stat-val">${waveDays.length || '—'}</span>
-          <span class="ev-info-stat-lbl">Race Days</span>
-        </div>
-        <div class="ev-info-stat">
-          <span class="ev-info-stat-val">${ev.waves ? ev.waves.length : '—'}</span>
-          <span class="ev-info-stat-lbl">Waves</span>
-        </div>
-      </div>`;
-    if (catEntries.length) {
-      infoHtml += `
-      <div class="ev-info-divider"></div>
-      <p class="ev-modal-section-title">Categories</p>
-      <div class="ev-info-cats">
-        ${catEntries.map(([cat, count]) => `
-        <div class="ev-info-cat-row">
-          <span class="ev-info-cat-name">${cat}</span>
-          <span class="ev-info-cat-count">${count}</span>
-        </div>`).join('')}
-      </div>`;
-    } else {
-      infoHtml += `<div class="ev-info-no-waves">Wave data<br>not yet available</div>`;
-    }
-    infoEl.innerHTML = infoHtml;
+
+    // Default HYROX laps-to-run rules (same for all events unless overridden in data)
+    const DEFAULT_LAPS = [
+      { run: 'Start (1st)', rule: 'Go <strong>IN</strong> the <strong>2nd</strong> time' },
+      { run: 'RUN 2–7',    rule: 'Go <strong>IN</strong> the <strong>3rd</strong> time' },
+      { run: 'RUN 8',      rule: 'Go <strong>IN</strong> the <strong>3rd</strong> time' },
+    ];
+    // ev.lapsToRun (array of {run, rule} or {run, rule:null}) can override per event
+    const lapRows = ev.lapsToRun || DEFAULT_LAPS;
+    const rowsHtml = lapRows.map(r => {
+      const ruleHtml = r.rule
+        ? `<span class="ev-laps-rule">${r.rule}</span>`
+        : `<span class="ev-laps-rule ev-laps-tba">TBA</span>`;
+      return `<div class="ev-laps-row"><span class="ev-laps-run">${r.run}</span>${ruleHtml}</div>`;
+    }).join('');
+    infoEl.innerHTML = `
+      <p class="ev-laps-heading">Laps to Run</p>
+      <div class="ev-laps-table">${rowsHtml || '<div class="ev-laps-row"><span class="ev-laps-rule ev-laps-tba" style="padding:12px">TBA</span></div>'}</div>`;
 
     // ── Wave timeline (below map) ──
     const wavesEl    = document.getElementById('evModalWaves');
@@ -1932,6 +1891,14 @@
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
+
+  // Wheel → horizontal scroll on wave timeline
+  document.getElementById('evModalWaves').addEventListener('wheel', function (e) {
+    const sc = this.querySelector('.ev-wave-tl-scroll');
+    if (!sc) return;
+    e.preventDefault();
+    sc.scrollLeft += e.deltaY + e.deltaX;
+  }, { passive: false });
 
   function closeModal() {
     overlay.classList.remove('open');
