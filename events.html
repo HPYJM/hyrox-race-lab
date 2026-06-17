@@ -1822,6 +1822,7 @@
     // ── Map ──
     const mapEl = document.getElementById('evModalMap');
     mapEl.style.position = 'relative';
+    mapEl.innerHTML = ''; // always reset before populating
     if (ev.mapImgDirect) {
       // PNG image — show inline with expand button
       const expandBtn = `<button class="ev-map-expand-btn" id="evMapExpandBtn" aria-label="Expand map" title="View full size">
