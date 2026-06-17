@@ -110,123 +110,63 @@
     "waves": [
       {
         "day": 1,
-        "category": "Open",
+        "category": "HYROX Men Open (incl. Adaptive)",
         "time": "09:00"
       },
       {
         "day": 1,
-        "category": "14:10",
-        "time": "26:20"
+        "category": "HYROX Doubles Women Pro",
+        "time": "14:10"
       },
       {
         "day": 1,
-        "category": "14:30",
-        "time": "26:40"
+        "category": "HYROX Women Pro",
+        "time": "14:30"
       },
       {
         "day": 1,
-        "category": "15:10",
-        "time": "30:20"
+        "category": "HYROX Doubles Mixed",
+        "time": "15:10"
       },
       {
         "day": 1,
-        "category": "19:00",
-        "time": "31:30"
+        "category": "HYROX Doubles Men Pro",
+        "time": "19:00"
       },
       {
         "day": 1,
-        "category": "19:40",
-        "time": "32:10"
+        "category": "HYROX Men Pro",
+        "time": "19:40"
       },
       {
         "day": 2,
-        "category": "Open",
+        "category": "HYROX Doubles Women Open",
         "time": "09:00"
       },
       {
         "day": 2,
-        "category": "12:20",
-        "time": "25:50"
+        "category": "HYROX Women Open (incl. Adaptive)",
+        "time": "12:20"
       },
       {
         "day": 2,
-        "category": "14:30",
-        "time": "29:50"
+        "category": "HYROX Doubles Men Open",
+        "time": "14:30"
       },
       {
         "day": 2,
-        "category": "18:30",
-        "time": "30:40"
+        "category": "HYROX Relay Men",
+        "time": "18:30"
       },
       {
         "day": 2,
-        "category": "19:00",
-        "time": "31:40"
+        "category": "HYROX Relay Mixed",
+        "time": "19:00"
       },
       {
         "day": 2,
-        "category": "20:00",
-        "time": "32:20"
-      },
-      {
-        "day": 1,
-        "category": "Open",
-        "time": "27:50"
-      },
-      {
-        "day": 1,
-        "category": "Open",
-        "time": "28:30"
-      },
-      {
-        "day": 1,
-        "category": "Open",
-        "time": "28:50"
-      },
-      {
-        "day": 1,
-        "category": "Open",
-        "time": "32:30"
-      },
-      {
-        "day": 1,
-        "category": "Open",
-        "time": "33:40"
-      },
-      {
-        "day": 1,
-        "category": "Open",
-        "time": "33:55"
-      },
-      {
-        "day": 2,
-        "category": "Open",
-        "time": "26:20"
-      },
-      {
-        "day": 2,
-        "category": "Open",
-        "time": "28:00"
-      },
-      {
-        "day": 2,
-        "category": "Open",
-        "time": "32:00"
-      },
-      {
-        "day": 2,
-        "category": "Open",
-        "time": "32:50"
-      },
-      {
-        "day": 2,
-        "category": "Open",
-        "time": "33:50"
-      },
-      {
-        "day": 2,
-        "category": "Open",
-        "time": "34:05"
+        "category": "HYROX Relay Women",
+        "time": "20:00"
       }
     ]
   },

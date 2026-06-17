@@ -256,14 +256,22 @@ async function probeEvent(page, venueUrl, full = false, timeoutMs = 12000, evDat
               currentDay = ((dn - evOrd + 7) % 7) + 1;
             }
           } else {
-            // "Category | time am/pm" or bare "time am/pm"
-            const m = text.match(/^(.*?)\|\s*(\d{1,2}:\d{2})\s*(am|pm)\b/i)
-                     || text.match(/^(.*?)(\d{1,2}:\d{2})\s*(am|pm)\b/i);
-            if (!m) continue;
-            // Skip bare venue-opening lines (no pipe, no category text)
-            if (!m[1].trim() && !text.includes('|')) continue;
-            cat = m[1].trim();
-            timePadded = to24(m[2], m[3]);
+            // Layout C: "time am/pm – time am/pm CATEGORY" (time-range-first, Jakarta style)
+            // e.g. "09:00AM – 13:40PM HYROX MEN OPEN INCLD. MEN ADAPTIVE"
+            const lcM = text.match(/^(\d{1,2}:\d{2})\s*(am|pm)\s*[–\-]\s*\d{1,2}:\d{2}\s*(?:am|pm)?\s+(.+)/i);
+            if (lcM) {
+              timePadded = to24(lcM[1], lcM[2]);
+              cat = lcM[3].trim();
+            } else {
+              // "Category | time am/pm" or bare "time am/pm"
+              const m = text.match(/^(.*?)\|\s*(\d{1,2}:\d{2})\s*(am|pm)\b/i)
+                       || text.match(/^(.*?)(\d{1,2}:\d{2})\s*(am|pm)\b/i);
+              if (!m) continue;
+              // Skip bare venue-opening lines (no pipe, no category text)
+              if (!m[1].trim() && !text.includes('|')) continue;
+              cat = m[1].trim();
+              timePadded = to24(m[2], m[3]);
+            }
           }
         } else {
           // Layout A: extract first time token
