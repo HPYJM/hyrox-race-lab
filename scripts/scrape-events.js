@@ -25,13 +25,17 @@
 const { chromium } = require('playwright');
 const fs           = require('fs');
 const path         = require('path');
+const { downloadCityImages, buildLocalCityImgMap, localWebPath, localFilename, CITY_IMG_MAP, IMG_DIR } = require('./download-city-images');
 
 const ROOT      = path.join(__dirname, '..');
 const DATA_DIR  = path.join(ROOT, 'data');
 const JS_OUT    = path.join(ROOT, 'js', 'events-data.js');
+const HTML_OUT  = path.join(ROOT, 'events.html');
 
 const args        = process.argv.slice(2);
 const DRY_RUN     = args.includes('--dry-run');
+const DO_IMAGES   = args.includes('--images') || args.includes('--force-images');
+const FORCE_IMG   = args.includes('--force-images');
 const ONLY_SEASON = (() => { const i = args.indexOf('--season'); return i >= 0 ? args[i + 1] : null; })();
 
 const SEASONS_TO_SCRAPE = ONLY_SEASON ? [ONLY_SEASON] : ['s9', 's10'];
@@ -451,7 +455,32 @@ function regenerateEventsDataJs() {
   fs.writeFileSync(JS_OUT, out.join('\n'), 'utf8');
   console.log('\n✓ Regenerated js/events-data.js');
 }
+// ── Step 5: download city images and rewrite local paths in events.html ──────────
+async function syncCityImages(force = false) {
+  console.log('\n\uD83D\uDCF8 Syncing city images → images/cities/ …');
+  await downloadCityImages(CITY_IMG_MAP, { force });
 
+  // Build the local map (falls back to remote URL if file missing)
+  const localMap = buildLocalCityImgMap(CITY_IMG_MAP);
+
+  // Rewrite CITY_IMG_BY_CITY block in events.html
+  let html = fs.readFileSync(HTML_OUT, 'utf8');
+  const startMarker = '// ── City image map — keyed by city name (shared across all seasons) ─────────';
+  const endMarker   = '};';
+  const startIdx = html.indexOf(startMarker);
+  if (startIdx === -1) { console.warn('  ⚠ Could not find city image map in events.html — skipping HTML patch'); return; }
+  // find the closing '}' of CITY_IMG_BY_CITY
+  const mapStart = html.indexOf('const CITY_IMG_BY_CITY = {', startIdx);
+  const mapEnd   = html.indexOf('\n  };', mapStart) + '\n  };'.length;
+
+  const entries = Object.entries(localMap)
+    .map(([city, p]) => `    '${city}':${' '.repeat(Math.max(1, 20 - city.length))}${JSON.stringify(p)},`)
+    .join('\n');
+  const newBlock = `const CITY_IMG_BY_CITY = {\n${entries}\n  }`;
+  html = html.slice(0, mapStart) + newBlock + html.slice(mapEnd);
+  fs.writeFileSync(HTML_OUT, html, 'utf8');
+  console.log('\u2713 Patched CITY_IMG_BY_CITY in events.html with local paths');
+}
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 (async () => {
@@ -547,6 +576,7 @@ function regenerateEventsDataJs() {
 
   if (!DRY_RUN) {
     regenerateEventsDataJs();
+    if (DO_IMAGES) await syncCityImages(FORCE_IMG);
     console.log('\n✅ Done. Commit and push to deploy the updated data.\n');
   } else {
     console.log('\n🔍 Dry-run complete — no files written.\n');
