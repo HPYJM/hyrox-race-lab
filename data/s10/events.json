@@ -104,7 +104,7 @@
     "isChampionship": false,
     "ticketsOnSale": false,
     "venueUrl": "https://hyrox.com/event/hyrox-jakarta/",
-    "mapImg": "https://hyrox.com/wp-content/uploads/2026/06/ID-JKT-Floor-Plan_Bilingual.pdf",
+    "mapImg": "maps/s10/s10-jakarta.pdf",
     "mapImgDirect": null,
     "wavesConfirmed": true,
     "waves": [
@@ -174,7 +174,7 @@
     "id": "s10-sydney",
     "city": "Sydney",
     "country": "Australia",
-    "flag": "\uD83C\uDDE6\uD83C\uDDFA",
+    "flag": "🇦🇺",
     "venue": "ICC Sydney",
     "date": "2026-07-01",
     "dateLabel": "1. Jul. 2026",

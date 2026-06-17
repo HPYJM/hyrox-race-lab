@@ -19,6 +19,10 @@
  * Options:
  *   --season s10         only probe a single season (new events always go to s10)
  *   --dry-run            print changes without writing files
+ *   --maps               download remote venue map PDFs to maps/<season>/ and patch JSON
+ *   --force-maps         re-download all maps even if already present
+ *   --images             download remote city hero images to images/cities/ and patch events.html
+ *   --force-images       re-download all city images even if already present
  */
 
 'use strict';
@@ -26,6 +30,7 @@ const { chromium } = require('playwright');
 const fs           = require('fs');
 const path         = require('path');
 const { downloadCityImages, buildLocalCityImgMap, localWebPath, localFilename, CITY_IMG_MAP, IMG_DIR } = require('./download-city-images');
+const { downloadMaps, patchJsonFiles } = require('./download-maps');
 
 const ROOT      = path.join(__dirname, '..');
 const DATA_DIR  = path.join(ROOT, 'data');
@@ -36,6 +41,8 @@ const args        = process.argv.slice(2);
 const DRY_RUN     = args.includes('--dry-run');
 const DO_IMAGES   = args.includes('--images') || args.includes('--force-images');
 const FORCE_IMG   = args.includes('--force-images');
+const DO_MAPS     = args.includes('--maps') || args.includes('--force-maps');
+const FORCE_MAPS  = args.includes('--force-maps');
 const ONLY_SEASON = (() => { const i = args.indexOf('--season'); return i >= 0 ? args[i + 1] : null; })();
 
 const SEASONS_TO_SCRAPE = ONLY_SEASON ? [ONLY_SEASON] : ['s9', 's10'];
@@ -575,6 +582,10 @@ async function syncCityImages(force = false) {
   }
 
   if (!DRY_RUN) {
+    if (DO_MAPS) {
+      const mapResults = await downloadMaps({ force: FORCE_MAPS });
+      if (Object.keys(mapResults).length > 0) patchJsonFiles(mapResults);
+    }
     regenerateEventsDataJs();
     if (DO_IMAGES) await syncCityImages(FORCE_IMG);
     console.log('\n✅ Done. Commit and push to deploy the updated data.\n');

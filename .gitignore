@@ -1,0 +1,7 @@
+node_modules/
+scripts/node_modules/
+scripts/package-lock.json
+scraper-out.txt
+
+# Venue map PDFs over GitHub's 100MB limit — keep remote URL instead
+maps/s10/s10-world-championships-stockholm.pdf
