@@ -173,9 +173,9 @@
   {
     "id": "s10-sydney",
     "city": "Sydney",
-    "country": "TBC",
-    "flag": "🌍",
-    "venue": "Click here",
+    "country": "Australia",
+    "flag": "\uD83C\uDDE6\uD83C\uDDFA",
+    "venue": "ICC Sydney",
     "date": "2026-07-01",
     "dateLabel": "1. Jul. 2026",
     "status": "upcoming",

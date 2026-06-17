@@ -191,7 +191,7 @@ const HYROX_S10_EVENTS = [
     "ticketsOnSale": false,
     "venueUrl": "https://hyrox.com/event/hyrox-sydney/",
     "mapImg": null,
-    "mapImgDirect": null,
+    "mapImgDirect": "https://hyrox.com/wp-content/uploads/2026/06/Sydney-scaled-4.jpg",
     "wavesConfirmed": true,
     "waves": [
       {
