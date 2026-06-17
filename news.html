@@ -23,99 +23,230 @@
 </div>
 
 <!-- ── NEWS TICKER ───────────────────────────────────────────────────────── -->
-<div class="ticker-bar">
+<div class="ticker-bar" id="tickerBar">
   <span class="ticker-label">LIVE</span>
   <div class="ticker-track-wrap">
-    <div class="ticker-track" id="tickerTrack">
-      <span class="ticker-item">� World Champs Stockholm — Jun 18–21 · Elite 15 + Pro categories</span>
-      <span class="ticker-item">🏅 World Record broken at Berlin 2026 — Mixed Doubles</span>
-      <span class="ticker-item">🎟 London Olympia 2026 — EMEA Regional Championships</span>
-      <span class="ticker-item">📣 HYROX Season 10 · 60 events · Jun – Dec 2026</span>
-      <span class="ticker-item">🏃 Istanbul · Bangkok · Cape Town — tickets on sale now</span>
-    </div>
+    <div class="ticker-track" id="tickerTrack"></div>
   </div>
 </div>
 
 <!-- ── NEWS PAGE ─────────────────────────────────────────────────────────── -->
 <main class="news-page-main">
   <div class="news-page-head">
-    <h2>📰&nbsp; HYROX News</h2>
-    <p class="news-page-sub">Latest articles and updates from hyrox.com</p>
+    <div class="news-page-head-row">
+      <div>
+        <h2>📰&nbsp; HYROX News</h2>
+        <p class="news-page-sub">Latest articles and updates from hyrox.com</p>
+      </div>
+      <div class="news-head-actions">
+        <div class="news-filter-bar" id="newsFilterBar"></div>
+        <button class="news-refresh-btn" id="newsRefreshBtn" title="Refresh feed" aria-label="Refresh news">↻</button>
+      </div>
+    </div>
   </div>
+
   <div class="news-list" id="newsList">
-    <div class="news-loading">Loading news…</div>
+    <div class="news-skeleton"></div>
+    <div class="news-skeleton"></div>
+    <div class="news-skeleton"></div>
+    <div class="news-skeleton"></div>
+    <div class="news-skeleton"></div>
+    <div class="news-skeleton"></div>
+  </div>
+
+  <div class="news-load-more-wrap" id="newsLoadMoreWrap" style="display:none">
+    <button class="news-load-more-btn" id="newsLoadMoreBtn">Load more</button>
   </div>
 </main>
 
 <script src="js/fetcher.js"></script>
 <script>
 (async function () {
-  // Ticker — endless RAF scroll, no CSS animation restart
-  (function () {
-    const track = document.getElementById('tickerTrack');
-    if (!track) return;
-    track.innerHTML += track.innerHTML;
-    let pos = 0;
-    let rafId = null;
-    function tick() {
-      pos += 0.5;
-      if (pos >= track.scrollWidth / 2) pos -= track.scrollWidth / 2;
-      track.style.transform = 'translateX(' + (-pos) + 'px)';
-      rafId = requestAnimationFrame(tick);
-    }
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-      } else {
-        if (!rafId) rafId = requestAnimationFrame(tick);
-      }
-    });
-    rafId = requestAnimationFrame(tick);
-  })();
 
-  // News cards
-  const list = document.getElementById('newsList');
-  if (!list) return;
-
-  if (location.protocol === 'file:') {
-    list.innerHTML = '<div class="news-offline">⚠ News unavailable on <code>file://</code>. Open via <code>npx serve .</code> for live feed.</div>';
-    return;
-  }
-
-  const items = await fetchNews(16);
-  if (!items || !items.length) {
-    list.innerHTML = '<div class="news-offline">Could not load news feed.</div>';
-    return;
-  }
-
-  // Sanitize a string for safe innerHTML insertion — prevents XSS from RSS data
+  /* ── Helpers ──────────────────────────────────────────────────────────── */
   function sanitizeText(str) {
     const div = document.createElement('div');
     div.textContent = str || '';
     return div.innerHTML;
   }
 
-  list.innerHTML = items.map(item => {
-    const d = new Date(item.date);
-    const dateStr   = isNaN(d) ? '' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  function relativeTime(dateStr) {
+    const d = new Date(dateStr);
+    if (isNaN(d)) return '';
+    const diff = Date.now() - d.getTime();
+    const mins = Math.floor(diff / 60000);
+    const hrs  = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (mins  <  2) return 'just now';
+    if (mins  < 60) return mins + 'm ago';
+    if (hrs   < 24) return hrs + 'h ago';
+    if (days  <  7) return days + 'd ago';
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function truncateWords(str, max) {
+    if (!str || str.length <= max) return str;
+    const cut = str.slice(0, max);
+    const last = cut.lastIndexOf(' ');
+    return (last > 0 ? cut.slice(0, last) : cut) + '\u2026';
+  }
+
+  const TAG_RULES = [
+    { tag: 'Results',       re: /result|finish|winner|podium|ranking|record/i },
+    { tag: 'Championships', re: /world.?champ|championship|elite/i },
+    { tag: 'Events',        re: /event|race|season|ticket|register|sign.?up/i },
+    { tag: 'Athletes',      re: /athlete|pro team|elite team/i },
+    { tag: 'Gear',          re: /shoe|gear|kit|apparel|sponsor|partner|puma/i },
+  ];
+  function getTags(title) {
+    return TAG_RULES.filter(r => r.re.test(title)).map(r => r.tag);
+  }
+
+  /* ── Ticker ───────────────────────────────────────────────────────────── */
+  function initTicker(headlines) {
+    const track = document.getElementById('tickerTrack');
+    const bar   = document.getElementById('tickerBar');
+    if (!track) return;
+    const fallback = [
+      'World Champs Stockholm — Jun 18-21 · Elite 15 + Pro categories',
+      'HYROX Season 10 · 72 events · Jun - Dec 2026',
+    ];
+    const items = headlines.length ? headlines : fallback;
+    track.innerHTML = items.map(h => '<span class="ticker-item">' + sanitizeText(h) + '</span>').join('');
+    track.innerHTML += track.innerHTML; // duplicate for seamless loop
+    let pos = 0, paused = false;
+    function tick() {
+      if (!paused) {
+        pos += 0.5;
+        if (pos >= track.scrollWidth / 2) pos -= track.scrollWidth / 2;
+        track.style.transform = 'translateX(' + (-pos) + 'px)';
+      }
+      requestAnimationFrame(tick);
+    }
+    document.addEventListener('visibilitychange', () => { paused = document.hidden; });
+    if (bar) {
+      bar.addEventListener('mouseenter', () => { paused = true; });
+      bar.addEventListener('mouseleave', () => { paused = false; });
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /* ── Card renderer ────────────────────────────────────────────────────── */
+  function renderCard(item, globalIdx) {
     const safeTitle = sanitizeText(item.title);
-    const safeDesc  = item.description ? sanitizeText(item.description) : '';
-    // Only allow http/https links — strip anything else (javascript:, data:, etc.)
+    const safeDesc  = truncateWords(item.description ? sanitizeText(item.description) : '', 120);
     const safeLink  = /^https?:\/\//i.test(item.link || '') ? item.link : '#';
     const safeImg   = /^https?:\/\//i.test(item.image || '') ? item.image : null;
+    const dateLabel = relativeTime(item.date);
+    const tags      = getTags(item.title);
+    const isNew     = globalIdx === 0;
+
     const imgHtml = safeImg
-      ? `<div class="news-card-img"><img src="${safeImg}" alt="" loading="lazy"></div>`
-      : `<div class="news-card-img news-card-img--placeholder"><span>📰</span></div>`;
-    return `
-    <a class="news-item" href="${safeLink}" target="_blank" rel="noopener noreferrer">
-      ${imgHtml}
-      <div class="news-card-body">
-        ${dateStr ? `<div class="news-date">${dateStr}</div>` : ''}
-        <div class="news-title">${safeTitle}</div>
-        ${safeDesc ? `<div class="news-desc">${safeDesc}</div>` : ''}
-      </div>
-    </a>`;
-  }).join('');
+      ? '<div class="news-card-img"><img src="' + safeImg + '" alt="" loading="lazy"></div>'
+      : '<div class="news-card-img news-card-img--placeholder"></div>';
+
+    const tagsHtml = tags.length
+      ? '<div class="news-tags">' + tags.map(t => '<span class="news-tag">' + t + '</span>').join('') + '</div>'
+      : '';
+
+    return '<a class="news-item' + (isNew ? ' news-item--new' : '') + '" href="' + safeLink + '" target="_blank" rel="noopener noreferrer" data-tags="' + tags.join(',') + '">' +
+      imgHtml +
+      '<div class="news-card-body">' +
+        '<div class="news-card-meta">' +
+          (dateLabel ? '<div class="news-date">' + dateLabel + '</div>' : '') +
+          (isNew ? '<span class="news-badge-new">NEW</span>' : '') +
+        '</div>' +
+        '<div class="news-title">' + safeTitle + '</div>' +
+        (safeDesc ? '<div class="news-desc">' + safeDesc + '</div>' : '') +
+        tagsHtml +
+      '</div>' +
+    '</a>';
+  }
+
+  /* ── Filter ───────────────────────────────────────────────────────────── */
+  let activeFilter = 'All';
+
+  function applyFilter() {
+    document.querySelectorAll('#newsList .news-item').forEach(function (el) {
+      const tags = el.dataset.tags || '';
+      el.style.display = (activeFilter === 'All' || tags.split(',').indexOf(activeFilter) !== -1) ? '' : 'none';
+    });
+  }
+
+  function buildFilterBar(allItems) {
+    const bar = document.getElementById('newsFilterBar');
+    if (!bar) return;
+    const counts = { All: allItems.length };
+    allItems.forEach(function (item) {
+      getTags(item.title).forEach(function (t) { counts[t] = (counts[t] || 0) + 1; });
+    });
+    const tags = ['All'].concat(Object.keys(counts).filter(function (k) { return k !== 'All' && counts[k] > 1; }));
+    bar.innerHTML = tags.map(function (t) {
+      return '<button class="news-filter-chip' + (t === activeFilter ? ' active' : '') + '" data-tag="' + t + '">' + t + ' <span class="news-filter-count">' + counts[t] + '</span></button>';
+    }).join('');
+    bar.addEventListener('click', function (e) {
+      const btn = e.target.closest('.news-filter-chip');
+      if (!btn) return;
+      activeFilter = btn.dataset.tag;
+      bar.querySelectorAll('.news-filter-chip').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.tag === activeFilter);
+      });
+      applyFilter();
+    });
+  }
+
+  /* ── Main ─────────────────────────────────────────────────────────────── */
+  const list = document.getElementById('newsList');
+  const PAGE = 12;
+  let allItems   = [];
+  let shownCount = 0;
+
+  function showSkeleton() {
+    if (list) list.innerHTML = Array(6).fill('<div class="news-skeleton"></div>').join('');
+  }
+
+  function showMore() {
+    const slice = allItems.slice(shownCount, shownCount + PAGE);
+    if (list) list.insertAdjacentHTML('beforeend', slice.map(function (item, i) { return renderCard(item, shownCount + i); }).join(''));
+    shownCount += slice.length;
+    applyFilter();
+    const wrap = document.getElementById('newsLoadMoreWrap');
+    if (wrap) wrap.style.display = shownCount < allItems.length ? '' : 'none';
+  }
+
+  async function loadFeed() {
+    if (!list) return;
+    activeFilter = 'All';
+    const filterBar = document.getElementById('newsFilterBar');
+    if (filterBar) filterBar.innerHTML = '';
+
+    if (location.protocol === 'file:') {
+      list.innerHTML = '<div class="news-offline">\u26a0 News unavailable on <code>file://</code>. Open via <code>npx serve .</code> for live feed.</div>';
+      initTicker([]);
+      return;
+    }
+
+    showSkeleton();
+    allItems = await fetchNews(48) || [];
+
+    if (!allItems.length) {
+      list.innerHTML = '<div class="news-offline">Could not load news feed.</div>';
+      initTicker([]);
+      return;
+    }
+
+    initTicker(allItems.slice(0, 6).map(function (i) { return '\uD83D\uDCF0 ' + i.title; }));
+    buildFilterBar(allItems);
+    shownCount = 0;
+    list.innerHTML = '';
+    showMore();
+  }
+
+  document.getElementById('newsLoadMoreBtn') && document.getElementById('newsLoadMoreBtn').addEventListener('click', showMore);
+  document.getElementById('newsRefreshBtn')  && document.getElementById('newsRefreshBtn').addEventListener('click', loadFeed);
+
+  await loadFeed();
+
 })();
 </script>
 </body>
