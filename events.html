@@ -1781,43 +1781,32 @@
 
     // ── Map ──
     const mapEl = document.getElementById('evModalMap');
-    mapEl.style.position = '';
+    mapEl.style.position = 'relative';
     if (ev.mapImgDirect) {
-      // Direct image (JPG/PNG) — show inline
-      mapEl.innerHTML = `<img src="${ev.mapImgDirect}" alt="${ev.city} venue map" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block">`;
+      // PNG image (converted from PDF) — show inline, PDF link as overlay badge
+      const pdfLink = ev.mapImg && ev.mapImg.toLowerCase().endsWith('.pdf')
+        ? `<a href="${ev.mapImg}" target="_blank" rel="noopener noreferrer"
+             style="position:absolute;bottom:8px;right:8px;z-index:2;background:rgba(0,0,0,.72);color:#ffe500;font-size:.7rem;font-weight:700;padding:5px 11px;border-radius:12px;text-decoration:none;backdrop-filter:blur(4px)">
+             📋 Open PDF ↗
+           </a>`
+        : '';
+      mapEl.innerHTML = `<img src="${ev.mapImgDirect}" alt="${ev.city} venue floor plan" loading="lazy" style="width:100%;height:100%;object-fit:contain;display:block;border-radius:6px">${pdfLink}`;
     } else if (ev.mapImg) {
       const isPdf = ev.mapImg.toLowerCase().endsWith('.pdf');
       const isLocal = !ev.mapImg.startsWith('http');
-      const isHttp = location.protocol.startsWith('http');
-      if (isLocal && isHttp) {
-        // GitHub Pages / HTTP — same-origin PDF iframe works fine
-        mapEl.innerHTML = `
-          <iframe
-            src="${ev.mapImg}"
-            style="width:100%;height:100%;border:0;border-radius:8px;background:#fff"
-            title="${ev.city} venue floor plan"
-          ></iframe>
+      // No PNG yet — fall back to button card (works on both file:// and http)
+      mapEl.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center;height:100%">
+          <div style="font-size:2.8rem;line-height:1">${isPdf ? '📋' : '🗺'}</div>
+          <div style="font-size:.8rem;color:rgba(255,255,255,.5);line-height:1.5">
+            <strong style="color:rgba(255,255,255,.85);display:block;margin-bottom:4px">Venue Floor Plan</strong>
+            ${isLocal ? '<span style="color:#4caf50;font-size:.7rem">✓ Saved locally</span>' : (isPdf ? 'Official PDF floor plan available' : 'Venue map available')}
+          </div>
           <a href="${ev.mapImg}" target="_blank" rel="noopener noreferrer"
-             style="position:absolute;bottom:8px;right:8px;z-index:2;background:rgba(0,0,0,.72);color:#ffe500;font-size:.7rem;font-weight:700;padding:5px 11px;border-radius:12px;text-decoration:none;backdrop-filter:blur(4px)">
-            Open full PDF ↗
-          </a>`;
-        mapEl.style.position = 'relative';
-      } else {
-        // file:// or remote URL — browsers block PDF iframes; use button card
-        mapEl.innerHTML = `
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center;height:100%">
-            <div style="font-size:2.8rem;line-height:1">${isPdf ? '📋' : '🗺'}</div>
-            <div style="font-size:.8rem;color:rgba(255,255,255,.5);line-height:1.5">
-              <strong style="color:rgba(255,255,255,.85);display:block;margin-bottom:4px">Venue Floor Plan</strong>
-              ${isLocal ? '<span style="color:#4caf50;font-size:.7rem">✓ Saved locally</span>' : (isPdf ? 'Official PDF floor plan available' : 'Venue map available')}
-            </div>
-            <a href="${ev.mapImg}" target="_blank" rel="noopener noreferrer"
-               style="display:inline-flex;align-items:center;gap:6px;background:#ffe500;color:#0f0f13;font-size:.78rem;font-weight:700;padding:8px 16px;border-radius:20px;text-decoration:none;letter-spacing:.02em">
-              ${isPdf ? 'Open Floor Plan PDF ↗' : 'View Map ↗'}
-            </a>
-          </div>`;
-      }
-    } else {
+             style="display:inline-flex;align-items:center;gap:6px;background:#ffe500;color:#0f0f13;font-size:.78rem;font-weight:700;padding:8px 16px;border-radius:20px;text-decoration:none;letter-spacing:.02em">
+            ${isPdf ? 'Open Floor Plan PDF ↗' : 'View Map ↗'}
+          </a>
+        </div>`;
       mapEl.innerHTML = `
         <div class="ev-modal-map-none">
           <span class="map-icon">🗺</span>

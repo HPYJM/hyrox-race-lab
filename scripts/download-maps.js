@@ -1,13 +1,15 @@
 /**
- * download-maps.js — Download venue map PDFs/images locally
+ * download-maps.js — Download venue map PDFs and convert to PNG for inline display
  *
  * Reads all data/sN/events.json files, finds events where mapImg is a remote
- * URL, downloads each file to maps/<season>/<event-id>.<ext>, then patches
- * the JSON files and regenerates js/events-data.js.
+ * URL, downloads each PDF to maps/<season>/<event-id>.pdf, converts page 1 to
+ * a PNG (maps/<season>/<event-id>.png), then patches the JSON:
+ *   mapImg        → local PDF path  (used for "Open PDF" download link)
+ *   mapImgDirect  → local PNG path  (shown inline in the venue map card)
  *
  * Usage (run from scripts/ or root):
  *   node scripts/download-maps.js          ← skip already-downloaded files
- *   node scripts/download-maps.js --force  ← re-download everything
+ *   node scripts/download-maps.js --force  ← re-download + reconvert everything
  *
  * Called from scrape-events.js via --maps or --force-maps flags.
  */
@@ -102,33 +104,75 @@ async function downloadMaps(opts = {}) {
 
   console.log(`\n🗺  Downloading ${toDownload.length} venue map(s) → maps/ …\n`);
 
-  for (const item of toDownload) {
-    const webPath = localMapWebPath(item.season, item.id, item.remoteUrl);
-    const label   = `  ${item.season}/${item.id}`.padEnd(48);
+  // Lazy-load the ESM converter (CJS → ESM via dynamic import)
+  let convertPdfToPng;
+  try {
+    const mod = await import('./convert-maps.mjs');
+    convertPdfToPng = mod.convertPdfToPng;
+  } catch (e) {
+    console.warn('  ⚠ Could not load convert-maps.mjs — PNGs will not be generated:', e.message);
+  }
 
+  for (const item of toDownload) {
+    const pdfWebPath = localMapWebPath(item.season, item.id, item.remoteUrl);
+    const pngDest    = item.dest.replace(/\.pdf$/i, '.png');
+    const pngWebPath = `maps/${item.season}/${item.id}.png`;
+    const label      = `  ${item.season}/${item.id}`.padEnd(48);
+
+    // --- Download PDF ---
     if (!force && fs.existsSync(item.dest)) {
       const kb = Math.round(fs.statSync(item.dest).size / 1024);
-      console.log(`${label} ⏭  already exists (${kb}KB)`);
+      process.stdout.write(`${label} ⏭  PDF (${kb}KB)`);
     } else {
-      process.stdout.write(`${label} ↓  `);
+      process.stdout.write(`${label} ↓  PDF `);
       try {
         const kb = await downloadFile(item.remoteUrl, item.dest);
-          // GitHub hard limit is 100MB — warn and skip if too large
-          if (kb > 90 * 1024) {
-            fs.unlinkSync(item.dest);
-            console.log(`⚠  ${kb}KB — exceeds 90MB GitHub safe limit; keeping remote URL`);
-            continue;
-          }
+        // GitHub hard limit is 100MB — warn and skip if too large
+        if (kb > 90 * 1024) {
+          fs.unlinkSync(item.dest);
+          console.log(`⚠  ${kb}KB — exceeds 90MB GitHub safe limit; keeping remote URL`);
+          continue;
+        }
+        process.stdout.write(`✓ ${kb}KB`);
+      } catch (err) {
+        console.log(`✗ ${err.message}`);
+        continue;
+      }
+    }
+
+    // --- Convert to PNG ---
+    if (convertPdfToPng) {
+      if (!force && fs.existsSync(pngDest)) {
+        const kb = Math.round(fs.statSync(pngDest).size / 1024);
+        console.log(` | PNG ⏭  (${kb}KB)`);
+      } else {
+        process.stdout.write(' | PNG converting … ');
+        try {
+          const kb = await convertPdfToPng(item.dest, pngDest, { force: true });
+          console.log(`✓ ${kb}KB`);
+        } catch (err) {
+          console.log(`✗ ${err.message}`);
+          // PNG conversion failed — still record PDF path
+          if (!results[item.season]) results[item.season] = {};
+          results[item.season][item.id] = { pdfPath: pdfWebPath, pngPath: null };
+          continue;
+        }
+      }
+    } else {
+      console.log('');
+    }
+
     if (!results[item.season]) results[item.season] = {};
-    results[item.season][item.id] = webPath;
+    results[item.season][item.id] = { pdfPath: pdfWebPath, pngPath: convertPdfToPng ? pngWebPath : null };
   }
 
   return results;
 }
 
 /**
- * Patch data/sN/events.json: replace remote mapImg with local web path.
- * Only updates events that were successfully downloaded.
+ * Patch data/sN/events.json:
+ *   mapImg       → local PDF path  ("Open PDF" link)
+ *   mapImgDirect → local PNG path  (inline <img> in the venue map card)
  */
 function patchJsonFiles(downloadResults) {
   let totalPatched = 0;
@@ -138,10 +182,16 @@ function patchJsonFiles(downloadResults) {
     const events = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
     let changed = false;
     for (const ev of events) {
-      if (idMap[ev.id] && ev.mapImg !== idMap[ev.id]) {
-        ev.mapImg = idMap[ev.id];
+      const entry = idMap[ev.id];
+      if (!entry) continue;
+      if (ev.mapImg !== entry.pdfPath) {
+        ev.mapImg = entry.pdfPath;
         changed = true;
         totalPatched++;
+      }
+      if (entry.pngPath && ev.mapImgDirect !== entry.pngPath) {
+        ev.mapImgDirect = entry.pngPath;
+        changed = true;
       }
     }
     if (changed) {
@@ -149,7 +199,7 @@ function patchJsonFiles(downloadResults) {
       console.log(`  ✓ Patched ${jsonPath}`);
     }
   }
-  console.log(`  ${totalPatched} mapImg field(s) updated in JSON source files.`);
+  console.log(`  ${totalPatched} event(s) updated in JSON source files.`);
 }
 
 // ── CLI entry point ───────────────────────────────────────────────────────────

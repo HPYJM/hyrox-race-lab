@@ -7,6 +7,8 @@
     "scrape": "node scrape-events.js"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^1.0.0",
+    "pdfjs-dist": "^6.0.227",
     "playwright": "^1.44.0"
   }
 }

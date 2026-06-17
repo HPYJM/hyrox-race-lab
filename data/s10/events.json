@@ -105,7 +105,7 @@
     "ticketsOnSale": false,
     "venueUrl": "https://hyrox.com/event/hyrox-jakarta/",
     "mapImg": "maps/s10/s10-jakarta.pdf",
-    "mapImgDirect": null,
+    "mapImgDirect": "maps/s10/s10-jakarta.png",
     "wavesConfirmed": true,
     "waves": [
       {
