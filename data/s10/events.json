@@ -184,8 +184,139 @@
     "venueUrl": "https://hyrox.com/event/hyrox-sydney/",
     "mapImg": null,
     "mapImgDirect": null,
-    "wavesConfirmed": false,
-    "waves": []
+    "wavesConfirmed": true,
+    "waves": [
+      {
+        "day": 1,
+        "category": "HYROX Doubles Men Open",
+        "time": "08:00"
+      },
+      {
+        "day": 1,
+        "category": "HYROX Men Open (incl. Men Adaptive)",
+        "time": "09:30"
+      },
+      {
+        "day": 1,
+        "category": "HYROX Doubles Women Open",
+        "time": "12:00"
+      },
+      {
+        "day": 1,
+        "category": "HYROX Women Open (incl. Women Adaptive)",
+        "time": "13:50"
+      },
+      {
+        "day": 1,
+        "category": "HYROX Relay Men",
+        "time": "16:30"
+      },
+      {
+        "day": 1,
+        "category": "HYROX Relay Mixed",
+        "time": "17:10"
+      },
+      {
+        "day": 1,
+        "category": "HYROX Relay Women",
+        "time": "18:30"
+      },
+      {
+        "day": 2,
+        "category": "HYROX Doubles Women Open",
+        "time": "08:00"
+      },
+      {
+        "day": 2,
+        "category": "HYROX Men Open (incl. Men Adaptive)",
+        "time": "09:00"
+      },
+      {
+        "day": 2,
+        "category": "HYROX Doubles Mixed",
+        "time": "14:30"
+      },
+      {
+        "day": 3,
+        "category": "HYROX Doubles Women Open",
+        "time": "08:00"
+      },
+      {
+        "day": 3,
+        "category": "HYROX Doubles Mixed",
+        "time": "10:50"
+      },
+      {
+        "day": 3,
+        "category": "HYROX Doubles Men Open",
+        "time": "12:30"
+      },
+      {
+        "day": 3,
+        "category": "HYROX Doubles Women Pro",
+        "time": "14:10"
+      },
+      {
+        "day": 3,
+        "category": "HYROX Women Pro",
+        "time": "14:50"
+      },
+      {
+        "day": 3,
+        "category": "HYROX Doubles Men Pro",
+        "time": "16:10"
+      },
+      {
+        "day": 3,
+        "category": "HYROX Men Pro",
+        "time": "17:30"
+      },
+      {
+        "day": 4,
+        "category": "HYROX Doubles Women Open",
+        "time": "08:00"
+      },
+      {
+        "day": 4,
+        "category": "HYROX Women Open (incl. Women Adaptive)",
+        "time": "12:10"
+      },
+      {
+        "day": 4,
+        "category": "HYROX Doubles Mixed",
+        "time": "15:00"
+      },
+      {
+        "day": 4,
+        "category": "HYROX Doubles Men Open",
+        "time": "18:20"
+      },
+      {
+        "day": 5,
+        "category": "HYROX Doubles Women Open",
+        "time": "08:00"
+      },
+      {
+        "day": 5,
+        "category": "HYROX Women Open (incl. Women Adaptive)",
+        "time": "10:00"
+      },
+      {
+        "day": 5,
+        "category": "HYROX Doubles Men Open",
+        "time": "12:10"
+      },
+      {
+        "day": 5,
+        "category": "HYROX Men Open (incl. Men Adaptive)",
+        "time": "14:30"
+      },
+      {
+        "day": 5,
+        "category": "HYROX Doubles Mixed",
+        "time": "18:20"
+      }
+    ]
   },
   {
     "id": "s10-hangzhou",
