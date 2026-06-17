@@ -11,7 +11,7 @@
     "isChampionship": true,
     "ticketsOnSale": false,
     "venueUrl": "https://hyrox.com/event/puma-hyrox-world-championships-stockholm/",
-    "mapImg": null,
+    "mapImg": "https://hyrox.com/wp-content/uploads/2026/06/HYROX_WC_Stockholm_VenueMap_AgeGroup_PRINT_2215x1864mm-1.pdf",
     "mapImgDirect": null,
     "wavesConfirmed": true,
     "waves": [
