@@ -1767,8 +1767,10 @@
 
     const img = cityImg(ev);
     const heroImg = document.getElementById('evModalHeroImg');
-    heroImg.style.backgroundImage = img ? `url('${img}')` : 'none';
-    heroImg.style.background = img ? '' : 'linear-gradient(135deg,#1a1a2e,#16213e)';
+    // Use background shorthand so no stale sub-properties linger from prior opens
+    heroImg.style.cssText = img
+      ? `position:absolute;inset:0;background:url('${img}') center 30% / cover no-repeat;transition:transform .4s`
+      : `position:absolute;inset:0;background:linear-gradient(135deg,#1a1a2e,#16213e);transition:transform .4s`;
 
     document.getElementById('evModalIata').textContent = IATA_BY_CITY[ev.city] || '';
 
