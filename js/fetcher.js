@@ -261,25 +261,32 @@ function parseRssItems(doc, opts = {}) {
 async function fetchNews(limit = 100) {
   const parser = new DOMParser();
 
-  // Google News worldwide RSS — no geo restriction, English
-  const GNEWS_URL = 'https://news.google.com/rss/search?q=hyrox&hl=en&gl=US&ceid=US:en';
+  // Google News via rss2json.com — avoids Cloudflare datacenter IP block (503) on news.google.com
+  // rss2json.com fetches on their server and returns JSON with CORS headers
+  const GNEWS_RSS = 'https://news.google.com/rss/search?q=hyrox&hl=en&gl=US&ceid=US:en';
+  const RSS2JSON_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(GNEWS_RSS)}`;
 
-  // Fetch both sources in parallel; official feed pages 1-3 for more history
-  const [gnHtml, hxHtml1, hxHtml2, hxHtml3] = await Promise.all([
-    proxyFetch(GNEWS_URL),
+  // Fetch Google News (rss2json, direct — no proxy needed) + hyrox.com feed (via CF Worker)
+  const [gnJson, hxHtml1] = await Promise.all([
+    fetch(RSS2JSON_URL).then(r => r.ok ? r.json() : null).catch(() => null),
     proxyFetch('https://hyrox.com/feed'),
-    proxyFetch('https://hyrox.com/feed?paged=2'),
-    proxyFetch('https://hyrox.com/feed?paged=3'),
   ]);
 
-  const gnItems  = gnHtml  ? parseRssItems(parser.parseFromString(gnHtml,  'text/xml'), { source: 'Google News' }) : [];
-  const hxItems1 = hxHtml1 ? parseRssItems(parser.parseFromString(hxHtml1, 'text/xml'), { source: 'hyrox.com' })   : [];
-  const hxItems2 = hxHtml2 ? parseRssItems(parser.parseFromString(hxHtml2, 'text/xml'), { source: 'hyrox.com' })   : [];
-  const hxItems3 = hxHtml3 ? parseRssItems(parser.parseFromString(hxHtml3, 'text/xml'), { source: 'hyrox.com' })   : [];
+  // Parse rss2json items → normalised shape
+  const gnItems = gnJson?.items?.map(i => ({
+    title:       (i.title || '').trim(),
+    link:        /^https?:\/\//i.test(i.link || '') ? i.link : '#',
+    date:        i.pubDate || '',
+    description: (i.description || i.content || '').replace(/<[^>]+>/g, '').trim().slice(0, 160),
+    image:       isSafeUrl(i.thumbnail || '') ? i.thumbnail : null,
+    source:      i.author || i.categories?.[0] || 'Google News',
+  })).filter(i => i.title) ?? [];
+
+  const hxItems1 = hxHtml1 ? parseRssItems(parser.parseFromString(hxHtml1, 'text/xml'), { source: 'hyrox.com' }) : [];
 
   // Merge all, deduplicate by normalised title
   const seen = new Set();
-  const all = [...gnItems, ...hxItems1, ...hxItems2, ...hxItems3].filter(item => {
+  const all = [...gnItems, ...hxItems1].filter(item => {
     const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60);
     if (seen.has(key)) return false;
     seen.add(key);
