@@ -1344,7 +1344,7 @@
   function todayStatus(ev) {
     const today = new Date().toISOString().slice(0, 10);
     if (ev.status === 'live') return 'live';
-    if (ev.date > today) return 'upcoming';
+    if (ev.date >= today) return 'upcoming';
     return 'past';
   }
 
