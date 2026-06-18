@@ -1,9 +1,18 @@
 /**
- * Cloudflare Worker — CORS proxy for hyresult.com
+ * Cloudflare Worker — CORS proxy for hyresult.com, hyrox.com, news.google.com
  * Deploy at: https://dash.cloudflare.com/workers
  *
  * Usage: https://YOUR-WORKER.workers.dev/?url=https://www.hyresult.com/athlete/tim-wenisch
  */
+
+const ALLOWED_HOSTS = [
+  'hyresult.com',
+  'www.hyresult.com',
+  'hyrox.com',
+  'www.hyrox.com',
+  'news.google.com',
+];
+
 export default {
   async fetch(request) {
     // Handle CORS preflight
@@ -18,7 +27,6 @@ export default {
       return new Response('Missing ?url= parameter', { status: 400, headers: corsHeaders() });
     }
 
-    // Only allow hyresult.com to prevent abuse
     let targetUrl;
     try {
       targetUrl = new URL(target);
@@ -26,8 +34,8 @@ export default {
       return new Response('Invalid URL', { status: 400, headers: corsHeaders() });
     }
 
-    if (!targetUrl.hostname.endsWith('hyresult.com')) {
-      return new Response('Only hyresult.com is allowed', { status: 403, headers: corsHeaders() });
+    if (!ALLOWED_HOSTS.includes(targetUrl.hostname)) {
+      return new Response('Host not allowed: ' + targetUrl.hostname, { status: 403, headers: corsHeaders() });
     }
 
     try {

@@ -220,7 +220,7 @@ function makeShortId(label, category, existingIds) {
 // Returns array of { title, link, date, description } or null on failure.
 
 // Allowed origin hostnames for external links and images from RSS / athlete data
-const ALLOWED_ORIGINS = new Set(['hyrox.com', 'www.hyrox.com', 'hyresult.com', 'www.hyresult.com']);
+const ALLOWED_ORIGINS = new Set(['hyrox.com', 'www.hyrox.com', 'hyresult.com', 'www.hyresult.com', 'news.google.com']);
 
 function isSafeUrl(raw) {
   try {
@@ -228,14 +228,9 @@ function isSafeUrl(raw) {
     return (u.protocol === 'https:' || u.protocol === 'http:') && ALLOWED_ORIGINS.has(u.hostname);
   } catch { return false; }
 }
-async function fetchNews(limit = 8) {
-  const html = await proxyFetch('https://hyrox.com/feed');
-  if (!html) return null;
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/xml');
-  const items = [...doc.querySelectorAll('item')].slice(0, limit);
-  return items.map(item => {
-    // Extract image: try media:content, then enclosure, then first <img> in content
+// Parse a standard RSS XML doc into news items
+function parseRssItems(doc, opts = {}) {
+  return [...doc.querySelectorAll('item')].map(item => {
     let image = null;
     const media = item.querySelector('content') || item.getElementsByTagNameNS('http://search.yahoo.com/mrss/', 'content')[0];
     if (media) image = media.getAttribute('url');
@@ -248,14 +243,53 @@ async function fetchNews(limit = 8) {
       const imgMatch = encoded.match(/<img[^>]+src=["']([^"']+)["']/);
       if (imgMatch) image = imgMatch[1];
     }
+    const rawLink = item.querySelector('link')?.textContent?.trim() || '';
+    // Google News link safety: allow news.google.com redirect URLs
+    const safeLink = /^https?:\/\//i.test(rawLink) ? rawLink : '#';
+    const source = item.querySelector('source')?.textContent?.trim() || opts.source || '';
     return {
       title:       item.querySelector('title')?.textContent?.trim() || '',
-      link:        isSafeUrl(item.querySelector('link')?.textContent?.trim() || '') ? item.querySelector('link').textContent.trim() : '#',
+      link:        safeLink,
       date:        item.querySelector('pubDate')?.textContent?.trim() || '',
-      description: item.querySelector('description')?.textContent?.replace(/<[^>]+>/g, '').trim().slice(0, 120) || '',
-      image:       isSafeUrl(image || '') ? image : null
+      description: item.querySelector('description')?.textContent?.replace(/<[^>]+>/g, '').trim().slice(0, 160) || '',
+      image:       isSafeUrl(image || '') ? image : null,
+      source
     };
+  }).filter(i => i.title);
+}
+
+async function fetchNews(limit = 100) {
+  const parser = new DOMParser();
+
+  // Google News worldwide RSS — no geo restriction, English
+  const GNEWS_URL = 'https://news.google.com/rss/search?q=hyrox&hl=en&gl=US&ceid=US:en';
+
+  // Fetch both sources in parallel; official feed pages 1-3 for more history
+  const [gnHtml, hxHtml1, hxHtml2, hxHtml3] = await Promise.all([
+    proxyFetch(GNEWS_URL),
+    proxyFetch('https://hyrox.com/feed'),
+    proxyFetch('https://hyrox.com/feed?paged=2'),
+    proxyFetch('https://hyrox.com/feed?paged=3'),
+  ]);
+
+  const gnItems  = gnHtml  ? parseRssItems(parser.parseFromString(gnHtml,  'text/xml'), { source: 'Google News' }) : [];
+  const hxItems1 = hxHtml1 ? parseRssItems(parser.parseFromString(hxHtml1, 'text/xml'), { source: 'hyrox.com' })   : [];
+  const hxItems2 = hxHtml2 ? parseRssItems(parser.parseFromString(hxHtml2, 'text/xml'), { source: 'hyrox.com' })   : [];
+  const hxItems3 = hxHtml3 ? parseRssItems(parser.parseFromString(hxHtml3, 'text/xml'), { source: 'hyrox.com' })   : [];
+
+  // Merge all, deduplicate by normalised title
+  const seen = new Set();
+  const all = [...gnItems, ...hxItems1, ...hxItems2, ...hxItems3].filter(item => {
+    const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
+
+  // Sort newest first
+  all.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  return all.slice(0, limit);
 }
 // ─── ATHLETE LOOKUP ──────────────────────────────────────────────────────────
 // Accepts a name ("John Doe"), slug ("john-doe"), or hyresult.com URL.

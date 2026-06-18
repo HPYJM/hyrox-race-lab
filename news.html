@@ -149,11 +149,15 @@
       ? '<div class="news-tags">' + tags.map(t => '<span class="news-tag">' + t + '</span>').join('') + '</div>'
       : '';
 
+    const safeSource = sanitizeText(item.source || '');
+    const sourceHtml = safeSource ? '<span class="news-source">' + safeSource + '</span>' : '';
+
     return '<a class="news-item' + (isNew ? ' news-item--new' : '') + '" href="' + safeLink + '" target="_blank" rel="noopener noreferrer" data-tags="' + tags.join(',') + '">' +
       imgHtml +
       '<div class="news-card-body">' +
         '<div class="news-card-meta">' +
           (dateLabel ? '<div class="news-date">' + dateLabel + '</div>' : '') +
+          sourceHtml +
           (isNew ? '<span class="news-badge-new">NEW</span>' : '') +
         '</div>' +
         '<div class="news-title">' + safeTitle + '</div>' +

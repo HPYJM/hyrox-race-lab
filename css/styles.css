@@ -1118,6 +1118,17 @@ kbd {
   align-items: center;
   gap: 8px;
 }
+.news-source {
+  font-size: .65rem;
+  color: var(--muted);
+  background: rgba(255,255,255,.06);
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
 .news-badge-new {
   font-size: .6rem;
   font-weight: 800;
