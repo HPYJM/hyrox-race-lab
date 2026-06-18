@@ -259,34 +259,50 @@ function parseRssItems(doc, opts = {}) {
 }
 
 async function fetchNews(limit = 100) {
-  const parser = new DOMParser();
+  // Google News via rss2json.com — avoids Cloudflare 503 block on news.google.com.
+  // Free tier = 10 items/query, rate-limited if called in parallel.
+  // Strategy: fire queries sequentially with a small delay, cache in localStorage for 30 min.
+  const CACHE_KEY = 'hyrox_news_cache';
+  const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+  try {
+    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (cached && (Date.now() - cached.ts) < CACHE_TTL && cached.items?.length > 5) {
+      return cached.items.slice(0, limit);
+    }
+  } catch {}
 
-  // Google News via rss2json.com — avoids Cloudflare datacenter IP block (503) on news.google.com
-  // rss2json.com fetches on their server and returns JSON with CORS headers
-  const GNEWS_RSS = 'https://news.google.com/rss/search?q=hyrox&hl=en&gl=US&ceid=US:en';
-  const RSS2JSON_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(GNEWS_RSS)}`;
+  const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
+  const queries = [
+    'hyrox',
+    'hyrox race',
+    'hyrox fitness',
+    'hyrox training',
+    'hyrox competition',
+  ];
 
-  // Fetch Google News (rss2json, direct — no proxy needed) + hyrox.com feed (via CF Worker)
-  const [gnJson, hxHtml1] = await Promise.all([
-    fetch(RSS2JSON_URL).then(r => r.ok ? r.json() : null).catch(() => null),
-    proxyFetch('https://hyrox.com/feed'),
-  ]);
+  const allItems = [];
+  for (const q of queries) {
+    try {
+      const rss = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en&gl=US&ceid=US:en`;
+      const json = await fetch(RSS2JSON + encodeURIComponent(rss))
+        .then(r => r.ok ? r.json() : null).catch(() => null);
+      (json?.items || []).forEach(i => allItems.push({
+        title:       (i.title || '').trim(),
+        link:        /^https?:\/\//i.test(i.link || '') ? i.link : '#',
+        date:        i.pubDate || '',
+        description: (i.description || i.content || '').replace(/<[^>]+>/g, '').trim().slice(0, 160),
+        image:       isSafeUrl(i.thumbnail || '') ? i.thumbnail : null,
+        source:      i.author || i.categories?.[0] || 'Google News',
+      }));
+    } catch {}
+    // Small delay to avoid rss2json free-tier rate limit
+    await new Promise(r => setTimeout(r, 350));
+  }
 
-  // Parse rss2json items → normalised shape
-  const gnItems = gnJson?.items?.map(i => ({
-    title:       (i.title || '').trim(),
-    link:        /^https?:\/\//i.test(i.link || '') ? i.link : '#',
-    date:        i.pubDate || '',
-    description: (i.description || i.content || '').replace(/<[^>]+>/g, '').trim().slice(0, 160),
-    image:       isSafeUrl(i.thumbnail || '') ? i.thumbnail : null,
-    source:      i.author || i.categories?.[0] || 'Google News',
-  })).filter(i => i.title) ?? [];
-
-  const hxItems1 = hxHtml1 ? parseRssItems(parser.parseFromString(hxHtml1, 'text/xml'), { source: 'hyrox.com' }) : [];
-
-  // Merge all, deduplicate by normalised title
+  // Deduplicate by normalised title
   const seen = new Set();
-  const all = [...gnItems, ...hxItems1].filter(item => {
+  const unique = allItems.filter(item => {
+    if (!item.title) return false;
     const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60);
     if (seen.has(key)) return false;
     seen.add(key);
@@ -294,9 +310,13 @@ async function fetchNews(limit = 100) {
   });
 
   // Sort newest first
-  all.sort((a, b) => new Date(b.date) - new Date(a.date));
+  unique.sort((a, b) => new Date(b.date) - new Date(a.date));
+  const result = unique.slice(0, limit);
 
-  return all.slice(0, limit);
+  // Cache result
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), items: result })); } catch {}
+
+  return result;
 }
 // ─── ATHLETE LOOKUP ──────────────────────────────────────────────────────────
 // Accepts a name ("John Doe"), slug ("john-doe"), or hyresult.com URL.
