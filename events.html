@@ -1050,8 +1050,8 @@
   </div>
 
   <div class="events-filter" id="eventsFilter">
-    <button class="ev-filter-btn active" data-filter="all">All</button>
-    <button class="ev-filter-btn" data-filter="upcoming">Upcoming</button>
+    <button class="ev-filter-btn" data-filter="all">All</button>
+    <button class="ev-filter-btn active" data-filter="upcoming">Upcoming</button>
     <button class="ev-filter-btn" data-filter="past">Past</button>
     <div class="view-toggle" id="viewToggle">
       <button class="view-toggle-btn active" data-view="cards" title="Card view">
@@ -1335,7 +1335,7 @@
   const tlContainer = document.getElementById('eventsTimeline');
   const tlHint = document.getElementById('tlScrollHint');
   let currentSeason = 10;
-  let currentFilter = 'all';
+  let currentFilter = 'upcoming';
   let currentView = 'cards';
   let countdownInterval = null;
 
@@ -1762,10 +1762,10 @@
     }
     // Cards mode: normal season switch
     currentSeason = sNum;
-    currentFilter = 'all';
+    currentFilter = 'upcoming';
     document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    document.querySelectorAll('.ev-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
+    document.querySelectorAll('.ev-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'upcoming'));
     const s = HYROX_SEASONS[currentSeason];
     document.getElementById('evSeasonTitle').textContent = `📅\u00a0 ${s.label} Events`;
     document.getElementById('evSeasonSub').textContent = `${s.years} · Click any event for details`;
