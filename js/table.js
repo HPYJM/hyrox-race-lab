@@ -103,14 +103,36 @@ function renderTable(rows) {
     const bestIdx = row.vals.indexOf(mn);
     const catColor = row.type === 'roxzone' ? '#a78bfa' : 'var(--muted)';
 
+    const avg = vis.length ? vis.reduce((a, b) => a + b, 0) / vis.length : mn;
+
     const cells = row.vals.map((v, i) => {
       const isHidden = hiddenRaces.has(activeRaces[i].id);
       const isVisMin = !isHidden && v === mn;
+      const isVisMax = !isHidden && v === mx;
       // PB = best across ALL races in this row (not just visible), only mark on the visible-best cell
       const isOverallPb = isVisMin && v === Math.min(...row.vals);
-      const cls = isHidden ? '' : (isVisMin ? `best${isOverallPb ? ' pb' : ''}` : v === mx ? 'worst' : '');
-      const style = isHidden ? 'opacity:.2;' : '';
-      return `<td class="${cls}" style="${style}">${fmt(v)}</td>`;
+      const cls = isHidden ? '' : (isVisMin ? `best${isOverallPb ? ' pb' : ''}` : isVisMax ? 'worst' : '');
+      
+      let style = isHidden ? 'opacity:.2;' : '';
+      if (!isHidden && vis.length > 1) {
+        const ratio = v / avg;
+        // heatmap: green if fast (<1), red if slow (>1)
+        if (ratio < 0.98) {
+          const intensity = Math.min(0.2, (1 - ratio) * 2);
+          style += `background-color:rgba(34,197,94,${intensity});`;
+        } else if (ratio > 1.02) {
+          const intensity = Math.min(0.2, (ratio - 1) * 2);
+          style += `background-color:rgba(239,68,68,${intensity});`;
+        }
+      }
+
+      let content = fmt(v);
+      if (!isHidden) {
+        if (isVisMin)      content = `🏆 ${content}`;
+        else if (isVisMax) content = `⚠️ ${content}`;
+      }
+
+      return `<td class="${cls}" style="${style}">${content}</td>`;
     }).join('');
 
     html += `

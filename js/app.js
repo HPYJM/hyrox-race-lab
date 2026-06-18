@@ -94,6 +94,7 @@ function buildHeader() {
           <div class="mini-stat"><div class="lbl">Runs</div><div class="val">${fmt(r.runsSecs)}</div></div>
           <div class="mini-stat"><div class="lbl">Workouts</div><div class="val">${fmt(r.workoutsSecs)}</div></div>
           <div class="mini-stat"><div class="lbl">Roxzone</div><div class="val">${fmt(r.roxzoneSecs)}</div></div>
+          <div class="mini-stat"><div class="lbl">A/P Ratio</div><div class="val">${(r.runsSecs / r.workoutsSecs).toFixed(2)}</div></div>
         </div>
         <div class="toggle-hint">click to toggle</div>
       </div>`);

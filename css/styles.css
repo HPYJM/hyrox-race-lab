@@ -654,7 +654,7 @@ header {
 .rc .total    { font-size: 2rem; font-weight: 800; color: var(--c); font-variant-numeric: tabular-nums; }
 .rc .rank     { color: var(--muted); font-size: .72rem; margin-top: 2px; }
 .rc .mini-grid {
-  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  display: grid; grid-template-columns: repeat(4, 1fr);
   gap: 8px; margin-top: 14px; padding-top: 14px;
   border-top: 1px solid var(--border);
 }
@@ -790,7 +790,6 @@ canvas { display: block; }
 .stable tr:hover td       { background: rgba(255,255,255,.025); }
 
 .best  { color: #22c55e; font-weight: 700; }
-.best.pb::after { content: ' 🏆'; font-style: normal; }
 .worst { color: #f87171; }
 
 .pill {
