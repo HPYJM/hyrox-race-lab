@@ -1,0 +1,102 @@
+name: Fetch HYROX News
+
+on:
+  schedule:
+    # Run daily at 06:00 UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch: # allow manual trigger from GitHub UI
+
+jobs:
+  fetch-news:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Fetch and merge news articles
+        run: |
+          node - <<'EOF'
+          const fs   = require('fs');
+          const path = require('path');
+
+          const RSS2JSON  = 'https://api.rss2json.com/v1/api.json?rss_url=';
+          const QUERIES   = ['hyrox','hyrox race','hyrox fitness','hyrox training','hyrox competition'];
+          const OUT_FILE  = path.join(process.cwd(), 'data', 'news.json');
+          const MAX_AGE_DAYS = 180; // drop articles older than 6 months
+
+          const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+          function isSafeUrl(u) {
+            try { return /^https?:\/\//i.test(new URL(u).href); } catch { return false; }
+          }
+
+          async function fetchQuery(q) {
+            const rss = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en&gl=US&ceid=US:en`;
+            const url = RSS2JSON + encodeURIComponent(rss);
+            const res = await fetch(url);
+            if (!res.ok) { console.warn(`rss2json ${q}: HTTP ${res.status}`); return []; }
+            const json = await res.json();
+            if (json.status !== 'ok') { console.warn(`rss2json ${q}: status=${json.status}`); return []; }
+            return (json.items || []).map(i => ({
+              title:       (i.title || '').trim(),
+              link:        isSafeUrl(i.link || '') ? i.link : '#',
+              date:        i.pubDate || '',
+              description: (i.description || i.content || '').replace(/<[^>]+>/g, '').trim().slice(0, 200),
+              image:       isSafeUrl(i.thumbnail || '') ? i.thumbnail : null,
+              source:      i.author || i.categories?.[0] || 'Google News',
+            })).filter(i => i.title && i.link !== '#');
+          }
+
+          async function main() {
+            // Load existing archive
+            let existing = [];
+            try { existing = JSON.parse(fs.readFileSync(OUT_FILE, 'utf8')); } catch {}
+            console.log(`Existing articles: ${existing.length}`);
+
+            // Fetch fresh articles sequentially (avoid rate limiting)
+            const fresh = [];
+            for (const q of QUERIES) {
+              const items = await fetchQuery(q);
+              console.log(`  "${q}" → ${items.length} items`);
+              fresh.push(...items);
+              await sleep(500);
+            }
+
+            // Merge: existing + fresh, deduplicate by normalised title
+            const cutoff = Date.now() - MAX_AGE_DAYS * 86400000;
+            const seen = new Set();
+            const merged = [...fresh, ...existing].filter(item => {
+              if (!item.title) return false;
+              const age = item.date ? new Date(item.date).getTime() : 0;
+              if (age && age < cutoff) return false; // drop very old articles
+              const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60);
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
+
+            // Sort newest first
+            merged.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            fs.writeFileSync(OUT_FILE, JSON.stringify(merged, null, 2));
+            console.log(`Written ${merged.length} articles to data/news.json`);
+          }
+
+          main().catch(e => { console.error(e); process.exit(1); });
+          EOF
+
+      - name: Commit updated news.json
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/news.json
+          if git diff --cached --quiet; then
+            echo "No new articles — nothing to commit."
+          else
+            COUNT=$(node -e "const f=require('./data/news.json');console.log(f.length)")
+            git commit -m "chore: daily news fetch — ${COUNT} articles [skip ci]"
+            git push
+          fi

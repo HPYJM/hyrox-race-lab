@@ -259,31 +259,25 @@ function parseRssItems(doc, opts = {}) {
 }
 
 async function fetchNews(limit = 100) {
-  // Google News via rss2json.com — avoids Cloudflare 503 block on news.google.com.
-  // Free tier = 10 items/query, rate-limited if called in parallel.
-  // Strategy: fire queries sequentially with a small delay, cache in localStorage for 30 min.
-  const CACHE_KEY = 'hyrox_news_cache';
-  const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+  // Primary source: data/news.json — built daily by GitHub Actions (.github/workflows/fetch-news.yml)
+  // This accumulates articles over time and loads instantly (no external API at runtime).
+  // Fallback: rss2json.com (live fetch) when the file is empty, e.g. first run before Action fires.
   try {
-    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-    if (cached && (Date.now() - cached.ts) < CACHE_TTL && cached.items?.length > 5) {
-      return cached.items.slice(0, limit);
+    const res = await fetch('data/news.json');
+    if (res.ok) {
+      const items = await res.json();
+      if (Array.isArray(items) && items.length > 0) return items.slice(0, limit);
     }
   } catch {}
 
+  // Fallback: fetch live via rss2json (sequential to avoid free-tier rate limiting)
   const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
-  const queries = [
-    'hyrox',
-    'hyrox race',
-    'hyrox fitness',
-    'hyrox training',
-    'hyrox competition',
-  ];
-
+  const queries  = ['hyrox', 'hyrox race', 'hyrox fitness', 'hyrox training', 'hyrox competition'];
   const allItems = [];
+
   for (const q of queries) {
     try {
-      const rss = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en&gl=US&ceid=US:en`;
+      const rss  = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en&gl=US&ceid=US:en`;
       const json = await fetch(RSS2JSON + encodeURIComponent(rss))
         .then(r => r.ok ? r.json() : null).catch(() => null);
       (json?.items || []).forEach(i => allItems.push({
@@ -295,12 +289,10 @@ async function fetchNews(limit = 100) {
         source:      i.author || i.categories?.[0] || 'Google News',
       }));
     } catch {}
-    // Small delay to avoid rss2json free-tier rate limit
-    await new Promise(r => setTimeout(r, 350));
+    await new Promise(r => setTimeout(r, 400));
   }
 
-  // Deduplicate by normalised title
-  const seen = new Set();
+  const seen   = new Set();
   const unique = allItems.filter(item => {
     if (!item.title) return false;
     const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60);
@@ -308,15 +300,8 @@ async function fetchNews(limit = 100) {
     seen.add(key);
     return true;
   });
-
-  // Sort newest first
   unique.sort((a, b) => new Date(b.date) - new Date(a.date));
-  const result = unique.slice(0, limit);
-
-  // Cache result
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), items: result })); } catch {}
-
-  return result;
+  return unique.slice(0, limit);
 }
 // ─── ATHLETE LOOKUP ──────────────────────────────────────────────────────────
 // Accepts a name ("John Doe"), slug ("john-doe"), or hyresult.com URL.
