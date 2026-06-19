@@ -673,13 +673,14 @@ function initExport() {
 
 // ─── CHART VIEW TOGGLES ─────────────────────────────────────────────────────
 function initChartViewToggles() {
-  document.querySelectorAll('.chart-view-slider').forEach(slider => {
-    slider.addEventListener('input', () => {
-      const chart = slider.dataset.chart;
-      const value = parseInt(slider.value);
-      const type = value === 0 ? 'line' : 'bar';
-      
-      // Update chart type and rebuild
+  document.querySelectorAll('.chart-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chart = btn.dataset.chart;
+      const type = btn.dataset.type;
+
+      document.querySelectorAll(`.chart-btn[data-chart="${chart}"]`).forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
       if (chart === 'runs') {
         window.runsChartType = type;
         if (window.buildRunsChart) window.buildRunsChart();
