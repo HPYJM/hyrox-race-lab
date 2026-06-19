@@ -670,6 +670,96 @@ function initExport() {
   btn.addEventListener('click', exportTableCSV);
 }
 
+// ─── NETWORK STATUS ───────────────────────────────────────────────────────────
+function initNetworkStatus() {
+  const isOnline = () => navigator.onLine;
+  
+  const updateStatus = () => {
+    if (!isOnline()) {
+      // Show offline indicator
+      const banner = document.getElementById('syncBanner');
+      if (banner) {
+        banner.classList.remove('hidden');
+        banner.classList.add('error');
+        document.getElementById('syncMsg').textContent = '⚠ You are offline. Some features may be limited.';
+        document.getElementById('syncSpinner').style.display = 'none';
+      }
+    }
+  };
+  
+  window.addEventListener('online', () => {
+    // When back online, trigger sync
+    const banner = document.getElementById('syncBanner');
+    if (banner) {
+      banner.classList.remove('error');
+      banner.classList.remove('hidden');
+      document.getElementById('syncMsg').textContent = 'Back online. Syncing…';
+      document.getElementById('syncSpinner').style.display = 'inline-block';
+      initSyncBanner();
+    }
+  });
+  
+  window.addEventListener('offline', updateStatus);
+  
+  // Initial check
+  updateStatus();
+}
+
+// ─── OFFLINE DOWNLOAD BUTTON ───────────────────────────────────────────────────
+function initOfflineDownload() {
+  const btn = document.getElementById('offlineDownloadBtn');
+  if (!btn) return;
+  
+  btn.addEventListener('click', async () => {
+    if (!window.offlineDB) {
+      btn.textContent = '⚠ Not supported';
+      setTimeout(() => btn.textContent = '⬇ Offline', 2000);
+      return;
+    }
+    
+    btn.disabled = true;
+    btn.textContent = '⏳ Saving…';
+    
+    try {
+      // Save all current races to IndexedDB
+      const races = getActiveRaces();
+      await window.offlineDB.saveAllRaces(races);
+      
+      // Save tracked athletes
+      const athletes = getTrackedAthletes();
+      for (const athlete of athletes) {
+        await window.offlineDB.saveAthlete(athlete);
+      }
+      
+      btn.textContent = '✓ Saved';
+      btn.classList.add('downloaded');
+      setTimeout(() => {
+        btn.textContent = '⬇ Offline';
+        btn.classList.remove('downloaded');
+      }, 3000);
+    } catch (err) {
+      console.error('Offline save failed:', err);
+      btn.textContent = '⚠ Failed';
+      setTimeout(() => btn.textContent = '⬇ Offline', 2000);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
+// ─── SERVICE WORKER ───────────────────────────────────────────────────────────
+function initServiceWorker() {
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(reg => {
+        console.log('Service Worker registered:', reg);
+      })
+      .catch(err => {
+        console.log('Service Worker registration failed:', err);
+      });
+  }
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 function init() {
   initTheme();
@@ -687,6 +777,9 @@ function init() {
   initExport();
   initBackToTop();
   initShareButton();
+  initOfflineDownload();
+  initNetworkStatus();
+  initServiceWorker();
   if (window.initSimulator) initSimulator();
   // modal wiring
   const modalClose = document.getElementById('modalClose');

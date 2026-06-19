@@ -1034,6 +1034,23 @@ canvas { display: block; }
 .share-btn:hover { color: var(--text); border-color: rgba(96,165,250,.5); background: rgba(59,130,246,.08); }
 .share-btn.copied { color: #22c55e; border-color: rgba(34,197,94,.5); }
 
+/* offline download button */
+.offline-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s, background .15s;
+  flex-shrink: 0;
+}
+.offline-btn:hover { color: var(--text); border-color: rgba(96,165,250,.5); background: rgba(59,130,246,.08); }
+.offline-btn.downloaded { color: #22c55e; border-color: rgba(34,197,94,.5); }
+
 
 /* ─── KEYBOARD SHORTCUTS MODAL ───────────────────────────────────────────── */
 .modal {

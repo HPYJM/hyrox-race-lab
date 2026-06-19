@@ -408,7 +408,11 @@ async function importRaceById(resultId, athleteSlug, labelHint) {
     radarStrength: meta.radarStrength
   };
   const added = store.add(race);
-  if (added) store.mergeIntoRaces();
+  if (added) {
+    store.mergeIntoRaces();
+    // Save to IndexedDB for offline access
+    if (window.offlineDB) offlineDB.saveRace(race).catch(() => {});
+  }
   return { status: added ? 'added' : 'exists', race };
 }
 
@@ -478,6 +482,8 @@ async function syncAthletes(onProgress, onComplete) {
         store.mergeIntoRaces();
         newCount++;
         onProgress(`✓ Added ${race.id} — ${race.label}`);
+        // Save to IndexedDB for offline access
+        if (window.offlineDB) offlineDB.saveRace(race).catch(() => {});
       }
     }
   }
