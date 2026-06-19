@@ -688,19 +688,19 @@ function initQRCode() {
     // Clear previous QR code
     container.innerHTML = '';
     
-    // Generate new QR code using qrcode npm package
+    // Generate new QR code using qrcodejs
     try {
-      if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
-        QRCode.toCanvas(url, { width: 200, margin: 1 }, (error, canvas) => {
-          if (error) {
-            console.error('QR code generation failed:', error);
-            container.innerHTML = '<p style="color:red">Failed to generate QR code.</p>';
-            return;
-          }
-          container.appendChild(canvas);
+      if (typeof QRCode !== 'undefined') {
+        new QRCode(container, {
+          text: url,
+          width: 200,
+          height: 200,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
         });
       } else {
-        console.error('QRCode is not defined or toCanvas not available');
+        console.error('QRCode is not defined');
         container.innerHTML = '<p style="color:red">QR code library not loaded. Please refresh the page.</p>';
       }
     } catch (e) {
