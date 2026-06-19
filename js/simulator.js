@@ -55,7 +55,7 @@ function getSimSegments(r) {
   const factors = SIM_TYPES.map(t => t === 0 ? runF : t === 1 ? roxF : workF);
   const base    = getSimBase(r);
   const ov      = simOverrides[r.id] || {};
-  return base.map((v, i) => ov[i] !== undefined ? ov[i] : v * factors[i]);
+  return base.map((v, i) => ov[i] !== undefined ? ov[i] : Math.round(v * factors[i]));
 }
 
 function simTotals(r) {
@@ -125,10 +125,10 @@ function buildSimChart() {
               // return SIM_TYPES[index] !== 1;
             },
             onDrag: (e, datasetIndex, index, value) => {
-              const v = Math.max(10, value);
+              const v = Math.round(Math.max(10, value));
               const raceId = activeRaces[datasetIndex].id;
               if (!simOverrides[raceId]) simOverrides[raceId] = {};
-              simOverrides[raceId][index] = Math.round(v);
+              simOverrides[raceId][index] = v;
               refreshSimResults();
               return v;
             },
