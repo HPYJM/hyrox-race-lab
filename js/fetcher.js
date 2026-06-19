@@ -109,8 +109,18 @@ function parseResultMeta(html, athleteSlug) {
     totalSecs = splitToSecs(total);
   }
 
-  // rank string
-  const rank = timeMatch ? `#${timeMatch[2]} of ${timeMatch[3]}` : '';
+  // rank string and percentile
+  let rank = '';
+  let pct = '';
+  if (timeMatch) {
+    rank = `#${timeMatch[2]} of ${timeMatch[3]}`;
+    const rankNum = parseInt(timeMatch[2]);
+    const totalNum = parseInt(timeMatch[3]);
+    if (rankNum > 0 && totalNum > 0) {
+      const percentile = ((totalNum - rankNum + 1) / totalNum * 100).toFixed(1);
+      pct = `Top ${percentile}%`;
+    }
+  }
 
   // AG
   const agMatch = html.match(/#(\d+)\s*in\s*AG\s*([\w-]+)/i);
@@ -149,7 +159,7 @@ function parseResultMeta(html, athleteSlug) {
     });
   }
 
-  return { athlete, partner, partnerSlug, total, totalSecs, rank, ag, label,
+  return { athlete, partner, partnerSlug, total, totalSecs, rank, pct, ag, label,
            category, division, ageGroup: agGroup, radarStrength };
 }
 
@@ -384,8 +394,7 @@ async function importRaceById(resultId, athleteSlug, labelHint) {
     division:     meta.division,
     ageGroup:     meta.ageGroup,
     rank:         meta.rank,
-    ag:           meta.ag,
-    pct:          '',
+    pct:          meta.pct,
     color:        null,
     total:        meta.total,
     totalSecs:    splits.totalSecs || meta.totalSecs,
@@ -450,8 +459,7 @@ async function syncAthletes(onProgress, onComplete) {
         division:    meta.division,
         ageGroup:    meta.ageGroup,
         rank:        meta.rank,
-        ag:          meta.ag,
-        pct:         '',
+        pct:         meta.pct,
         color:       null, // assigned by store.mergeIntoRaces
         total:       meta.total,
         totalSecs:   splits.totalSecs || meta.totalSecs,

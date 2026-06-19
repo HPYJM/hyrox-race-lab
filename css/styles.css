@@ -1636,6 +1636,56 @@ kbd {
 }
 .sync-close:hover { color: var(--text); }
 
+/* ─── RANKINGS ───────────────────────────────────────────────────────────────── */
+.rankings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0;
+}
+.rankings-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--hover-bg-light);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.rankings-rank {
+  font-size: 1.1rem;
+  font-weight: 700;
+  width: 32px;
+  text-align: center;
+  color: var(--muted);
+}
+.rankings-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rankings-name {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.rankings-race {
+  font-size: .74rem;
+  color: var(--muted);
+}
+.rankings-pct {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 70px;
+  text-align: right;
+}
+.rankings-pct.top-10 { color: #22c55e; }
+.rankings-pct.top-25 { color: #3b82f6; }
+.rankings-pct.top-50 { color: #f59e0b; }
+.rankings-pct.below-50 { color: #ef4444; }
+
 /* ─── RESPONSIVE ──────────────────────────────────────────────────────────── */
 @media (max-width: 620px) {
   header { padding: 20px; }

@@ -65,6 +65,7 @@
     <h2>🏅  Races</h2>
     <div class="rule"></div>
     <div class="races-controls">
+      <button class="theme-toggle-btn" id="themeToggle" title="Toggle dark/light theme">🌙</button>
       <button class="athletes-panel-btn" id="athletesPanelBtn" title="Manage tracked athletes">👤 Athletes</button>
       <button class="share-btn" id="shareLinkBtn" title="Copy shareable link">🔗 Share</button>
       <div class="cat-toggle" id="catToggle">
@@ -87,6 +88,46 @@
 
 <!-- ── MAIN ───────────────────────────────────────────────────────────────── -->
 <main>
+
+  <!-- WHAT IF SIMULATOR (MOVED) -->
+  <div class="section" id="simulator">
+    <div class="section-head">
+      <h2>🔮&nbsp; "What If" Simulator — Goal Pacer</h2>
+      <div class="rule"></div>
+      <button class="section-toggle" data-target="simulatorBody" title="Hide/show">▾</button>
+    </div>
+    <div class="section-body" id="simulatorBody">
+      <div class="ccard sim-card">
+        <div class="sim-controls">
+          <div class="sim-control-group">
+            <label>🏃 Running Pace Improvement</label>
+            <div class="sim-input-row">
+              <input type="range" id="runAdj" min="0" max="15" step="0.5" value="0">
+              <span class="sim-val" id="runAdjVal">0%</span>
+            </div>
+          </div>
+          <div class="sim-control-group">
+            <label>💪 Workout Station Improvement</label>
+            <div class="sim-input-row">
+              <input type="range" id="workAdj" min="0" max="15" step="0.5" value="0">
+              <span class="sim-val" id="workAdjVal">0%</span>
+            </div>
+          </div>
+          <div class="sim-control-group">
+            <label>⚡ Roxzone Speed Improvement</label>
+            <div class="sim-input-row">
+              <input type="range" id="roxAdj" min="0" max="25" step="1" value="0">
+              <span class="sim-val" id="roxAdjVal">0%</span>
+            </div>
+          </div>
+        </div>
+        <div class="sim-divider"></div>
+        <div class="sim-outputs" id="simResults">
+          <!-- Populated by simulator.js -->
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- PERFORMANCE RADAR -->
   <div class="section" id="radar">
@@ -134,6 +175,22 @@
     </div>
   </div>
 
+  <!-- STATION RECOVERY (NEW) -->
+  <div class="section" id="recovery">
+    <div class="section-head">
+      <h2>⛽&nbsp; Station Recovery Analysis — run-to-run delta</h2>
+      <div class="rule"></div>
+      <button class="section-toggle" data-target="recoveryBody" title="Hide/show">▾</button>
+    </div>
+    <div class="section-body" id="recoveryBody">
+    <div class="ccard">
+      <div class="ctitle">Pace impact: Run duration immediately AFTER vs BEFORE station (higher = more fatigue)</div>
+      <canvas id="recoveryChart"></canvas>
+      <div class="glegend" id="recoveryLegend"></div>
+    </div>
+    </div>
+  </div>
+
   <!-- ROXZONE TRANSITIONS -->
   <div class="section" id="roxzone">
     <div class="section-head">
@@ -150,17 +207,17 @@
     </div>
   </div>
 
-  <!-- CATEGORY TOTALS -->
-  <div class="section" id="totals">
+  <!-- RANKINGS -->
+  <div class="section" id="rankings">
     <div class="section-head">
-      <h2>📊&nbsp; Category Totals</h2>
+      <h2>🏆&nbsp; Overall Rankings — percentile vs. field</h2>
       <div class="rule"></div>
-      <button class="section-toggle" data-target="totalsBody" title="Hide/show">▾</button>
+      <button class="section-toggle" data-target="rankingsBody" title="Hide/show">▾</button>
     </div>
-    <div class="section-body" id="totalsBody">
+    <div class="section-body" id="rankingsBody">
     <div class="ccard">
-      <div class="ctitle">Total · Running · Workouts · Roxzone (transition)</div>
-      <canvas id="totalsChart"></canvas>
+      <div class="ctitle">Overall race percentile ranking (higher = better placement vs. field)</div>
+      <div id="rankingsList" class="rankings-list"></div>
     </div>
     </div>
   </div>
@@ -185,7 +242,6 @@
     </div>
     </div>
   </div>
-
 
 </main>
 
@@ -218,8 +274,10 @@
 
 <script src="js/data.js"></script>
 <script src="js/store.js"></script>
+<script src="js/analytics.js"></script>
 <script src="js/fetcher.js"></script>
 <script src="js/charts.js"></script>
+<script src="js/simulator.js"></script>
 <script src="js/table.js"></script>
 <script src="js/app.js"></script>
 </body>

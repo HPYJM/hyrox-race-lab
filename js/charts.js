@@ -141,8 +141,9 @@ function buildRadarLegend() {
   const activeRaces = getActiveRaces();
   activeRaces.forEach(r => {
     const cls = hiddenRaces.has(r.id) ? ' dimmed' : '';
+    const pctStr = r.pct ? `<span style="color:var(--muted);margin-left:8px">(${r.pct})</span>` : '';
     el.insertAdjacentHTML('beforeend',
-      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.label}</div>`);
+      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.label}${pctStr}</div>`);
   });
 }
 
@@ -206,8 +207,9 @@ function buildRunsLegend() {
     // Fatigue Index: (Run 8 - Run 1) / Run 1
     const decay = ((r.runs[7] - r.runs[0]) / r.runs[0]) * 100;
     const decayStr = decay > 0 ? `+${decay.toFixed(1)}%` : `${decay.toFixed(1)}%`;
+    const pctStr = r.pct ? `<span style="color:var(--muted);margin-left:8px">(${r.pct})</span>` : '';
     el.insertAdjacentHTML('beforeend',
-      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.athlete} <span style="color:var(--muted);margin-left:8px">(${decayStr} decay)</span></div>`);
+      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.athlete} <span style="color:var(--muted);margin-left:8px">(${decayStr} decay)</span>${pctStr}</div>`);
   });
 }
 
@@ -432,8 +434,9 @@ function buildRecoveryLegend() {
   const activeRaces = getActiveRaces();
   activeRaces.forEach(r => {
     const cls = hiddenRaces.has(r.id) ? ' dimmed' : '';
+    const pctStr = r.pct ? `<span style="color:var(--muted);margin-left:8px">(${r.pct})</span>` : '';
     el.insertAdjacentHTML('beforeend',
-      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.label}</div>`);
+      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.label}${pctStr}</div>`);
   });
 }
 
@@ -448,5 +451,45 @@ function rebuildAllCharts() {
   buildRoxzoneCharts();
   buildRecoveryChart();
   buildRecoveryLegend();
+  buildRankings();
   if (window.updateSimulatorResults) updateSimulatorResults(); // Sync simulator
+}
+
+// ─── RANKINGS SECTION ───────────────────────────────────────────────────────
+function buildRankings() {
+  const el = document.getElementById('rankingsList');
+  if (!el) return;
+  el.innerHTML = '';
+
+  const activeRaces = getActiveRaces();
+  if (!activeRaces.length) {
+    el.innerHTML = '<p style="text-align:center;padding:24px;color:var(--muted)">No races to rank. Add an athlete to get started.</p>';
+    return;
+  }
+
+  // Sort races by percentile (highest first)
+  const sortedRaces = [...activeRaces].sort((a, b) => {
+    const aPct = parseFloat(a.pct?.replace('Top ', '').replace('%', '') || 0);
+    const bPct = parseFloat(b.pct?.replace('Top ', '').replace('%', '') || 0);
+    return bPct - aPct;
+  });
+
+  sortedRaces.forEach((r, i) => {
+    const pctValue = parseFloat(r.pct?.replace('Top ', '').replace('%', '') || 0);
+    let pctClass = 'below-50';
+    if (pctValue >= 90) pctClass = 'top-10';
+    else if (pctValue >= 75) pctClass = 'top-25';
+    else if (pctValue >= 50) pctClass = 'top-50';
+
+    el.insertAdjacentHTML('beforeend',
+      `<div class="rankings-item">
+        <div class="rankings-rank">#${i + 1}</div>
+        <div class="rankings-info">
+          <div class="rankings-name">${r.athlete}</div>
+          <div class="rankings-race">${r.label} — ${r.category} ${r.division}</div>
+        </div>
+        <div class="rankings-pct ${pctClass}">${r.pct || 'N/A'}</div>
+      </div>`
+    );
+  });
 }

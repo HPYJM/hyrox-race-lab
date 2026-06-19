@@ -77,7 +77,10 @@ function renderTable(rows) {
   // thead
   const raceCols = activeRaces.map((r, ri) =>
     `<th data-sort="val${ri}" class="sortable">
-       <span class="pill" style="background:${rgba(r.color,.18)};color:${r.color}">${r.id}</span>
+       <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+         <span class="pill" style="background:${rgba(r.color,.18)};color:${r.color}">${r.id}</span>
+         ${r.pct ? `<span style="font-size:.65rem;color:var(--muted);font-weight:600">${r.pct}</span>` : ''}
+       </div>
        <span class="sort-icon"></span>
      </th>`
   ).join('');
