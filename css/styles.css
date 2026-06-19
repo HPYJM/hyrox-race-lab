@@ -907,11 +907,15 @@ main { max-width: 1440px; margin: 0 auto; padding: 32px 36px; }
 .chart-view-label {
   font-size: .75rem;
   color: var(--muted);
-  font-weight: 500;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--hover-bg-light);
 }
 .chart-view-slider {
-  width: 80px;
+  width: 60px;
   cursor: pointer;
+  accent-color: var(--c);
 }
 .chart-view-btn {
   background: transparent;
