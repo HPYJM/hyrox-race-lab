@@ -689,17 +689,23 @@ function initQRCode() {
     container.innerHTML = '';
     
     // Generate new QR code using qrcodejs
-    if (typeof QRCode !== 'undefined') {
-      new QRCode(container, {
-        text: url,
-        width: 200,
-        height: 200,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
-      });
-    } else {
-      container.textContent = 'QR code library not loaded';
+    try {
+      if (typeof QRCode !== 'undefined') {
+        new QRCode(container, {
+          text: url,
+          width: 200,
+          height: 200,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      } else {
+        console.error('QRCode is not defined');
+        container.innerHTML = '<p style="color:red">QR code library not loaded. Please refresh the page.</p>';
+      }
+    } catch (e) {
+      console.error('QR code generation error:', e);
+      container.innerHTML = '<p style="color:red">Failed to generate QR code.</p>';
     }
     
     // Show modal
