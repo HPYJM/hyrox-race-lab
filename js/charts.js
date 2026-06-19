@@ -153,7 +153,7 @@ function buildRunsChart() {
   const colors = getChartColors();
   try {
     charts.runs = new Chart(document.getElementById('runsChart'), {
-    type: 'line',
+    type: runsChartType,
     data: {
       labels: ['Run 1','Run 2','Run 3','Run 4','Run 5','Run 6','Run 7','Run 8'],
       datasets: activeRaces.map(r => ({
