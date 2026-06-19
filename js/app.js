@@ -688,15 +688,15 @@ function initQRCode() {
     // Clear previous QR code
     container.innerHTML = '';
     
-    // Generate new QR code
+    // Generate new QR code using qrcodejs
     if (typeof QRCode !== 'undefined') {
-      QRCode.toCanvas(url, { width: 200, margin: 1 }, (error, canvas) => {
-        if (error) {
-          console.error('QR code generation failed:', error);
-          container.textContent = 'Failed to generate QR code';
-          return;
-        }
-        container.appendChild(canvas);
+      new QRCode(container, {
+        text: url,
+        width: 200,
+        height: 200,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
       });
     } else {
       container.textContent = 'QR code library not loaded';
