@@ -162,7 +162,7 @@ function buildRunsChart() {
         data: r.runs,
         hidden: hiddenRaces.has(r.id),
         borderColor: r.color,
-        backgroundColor: rgba(r.color, 0.08),
+        backgroundColor: window.runsChartType === 'bar' ? rgba(r.color, 0.65) : rgba(r.color, 0.08),
         pointBackgroundColor: r.color,
         pointBorderColor: colors.pointBorder,
         pointBorderWidth: 2,
@@ -252,21 +252,71 @@ function buildWorkoutCharts() {
           formatter: v => fmt(v),
           anchor: 'end', align: 'top', offset: 4,
           borderRadius: 3,
-          display: window.workoutsChartType === 'line'
+          backgroundColor: c => rgba(c.dataset.borderColor, 0.12),
+          padding: { top: 2, bottom: 2, left: 5, right: 5 }
         }
       },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { callback: fmt }
-        }
-      }
+      scales: { y: { ...yScale(), suggestedMin: 0 }, x: xScale() }
     }
     });
   } catch (e) {
     console.error('Workouts chart error:', e);
   }
   buildWorkoutsLegend();
+  buildWorkoutMiniCharts();
+}
+
+function buildWorkoutMiniCharts() {
+  WORKOUT_LABELS.forEach((_, i) => {
+    if (charts[`w${i}`]) { charts[`w${i}`].destroy(); delete charts[`w${i}`]; }
+  });
+  const wgridEl = document.getElementById('wgrid');
+  if (!wgridEl) return;
+  const activeRaces = getActiveRaces();
+  const colors = getChartColors();
+  wgridEl.innerHTML = WORKOUT_LABELS.map((st, i) =>
+    `<div class="ccard"><div class="ctitle">${st}</div><canvas id="w${i}"></canvas></div>`
+  ).join('');
+  WORKOUT_LABELS.forEach((st, i) => {
+    try {
+      charts[`w${i}`] = new Chart(document.getElementById(`w${i}`), {
+      type: 'bar',
+      data: {
+        labels: activeRaces.map(r => r.id),
+        datasets: [{
+          label: st,
+          data: activeRaces.map(r => r.workouts[i]),
+          backgroundColor: activeRaces.map(r => hiddenRaces.has(r.id) ? rgba(r.color, 0.1) : rgba(r.color, 0.65)),
+          borderColor: activeRaces.map(r => hiddenRaces.has(r.id) ? rgba(r.color, 0.2) : r.color),
+          borderWidth: 1.5,
+          borderRadius: 6,
+          hoverBackgroundColor: activeRaces.map(r => rgba(r.color, 0.9))
+        }]
+      },
+      options: {
+        responsive: true,
+        aspectRatio: 1.6,
+        layout: { padding: { top: 30 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => ` ${fmt(c.raw)}` } },
+          datalabels: {
+            color: c => hiddenRaces.has(activeRaces[c.dataIndex].id) ? 'transparent' : colors.text,
+            font: { size: 11, weight: '700' },
+            formatter: v => fmt(v),
+            anchor: 'end', align: 'top', offset: 3
+          }
+        },
+        scales: {
+          y: { ...yScale(), ticks: { ...yScale().ticks, maxTicksLimit: 4 } },
+          x: xScale()
+        }
+      }
+      });
+    } catch (err) {
+      console.error(`Workout mini chart w${i} error:`, err);
+    }
+  });
 }
 
 function buildWorkoutsLegend() {
