@@ -116,6 +116,7 @@ function buildHeader() {
     rcEl.insertAdjacentHTML('beforeend', `
       <div class="rc" style="--c:${r.color}" data-race-id="${r.id}" title="Click to toggle ${r.label}">
         <span class="badge">${r.id}</span>
+        ${r.pct ? `<span class="pct-badge">${r.pct}</span>` : ''}
         <div class="athlete">${athleteLine}</div>
         <div class="event">${r.label}</div>
         ${r.total ? `<div class="total">${r.total}</div>` : ''}

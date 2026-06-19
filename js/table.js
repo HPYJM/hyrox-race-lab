@@ -129,11 +129,23 @@ function renderTable(rows) {
         }
       }
 
+      // Add station rank for workout rows
+      let rankBadge = '';
+      if (row.type === 'workout' && activeRaces[i].radarStrength) {
+        const stationIdx = WORKOUT_LABELS.indexOf(row.lbl);
+        if (stationIdx >= 0 && activeRaces[i].radarStrength[stationIdx]) {
+          const strength = activeRaces[i].radarStrength[stationIdx];
+          const rankPct = strength.toFixed(0);
+          rankBadge = `<span style="font-size:.6rem;color:var(--muted);margin-left:4px">(${rankPct}%)</span>`;
+        }
+      }
+
       let content = fmt(v);
       if (!isHidden) {
         if (isVisMin)      content = `🏆 ${content}`;
         else if (isVisMax) content = `⚠️ ${content}`;
       }
+      content += rankBadge;
 
       return `<td class="${cls}" style="${style}">${content}</td>`;
     }).join('');
