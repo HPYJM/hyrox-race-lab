@@ -4,59 +4,102 @@ const charts = {};
 // tracks which races are currently hidden (managed by app.js)
 const hiddenRaces = new Set();
 
+// ─── THEME AWARE COLORS ───────────────────────────────────────────────────────
+function getChartColors() {
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  return {
+    muted: isDark ? '#5d7491' : '#475569',
+    text: isDark ? '#dce6f5' : '#1e293b',
+    grid: isDark ? 'rgba(30,45,68,0.9)' : 'rgba(0,0,0,0.05)',
+    pointBorder: isDark ? '#090d17' : '#ffffff'
+  };
+}
+
 // ─── CHART.JS DEFAULTS ───────────────────────────────────────────────────────
 Chart.register(ChartDataLabels);
-Chart.defaults.color = '#5d7491';
 Chart.defaults.font.family = "'Inter','Segoe UI',system-ui,sans-serif";
 Chart.defaults.font.size = 11;
 
-const yScale = {
-  grid:   { color: 'rgba(30,45,68,0.9)' },
-  border: { display: false },
-  ticks:  { callback: v => fmt(v), color: '#5d7491', maxTicksLimit: 5 }
+function updateChartDefaults() {
+  const colors = getChartColors();
+  Chart.defaults.color = colors.muted;
+}
+
+const yScale = () => {
+  const colors = getChartColors();
+  return {
+    grid:   { color: colors.grid },
+    border: { display: false },
+    ticks:  { callback: v => fmt(v), color: colors.muted, maxTicksLimit: 5 }
+  };
 };
-const xScale = {
-  grid:   { display: false },
-  border: { display: false },
-  ticks:  { color: '#dce6f5' }
+const xScale = () => {
+  const colors = getChartColors();
+  return {
+    grid:   { display: false },
+    border: { display: false },
+    ticks:  { color: colors.text }
+  };
 };
 
 // ─── RADAR CHART ─────────────────────────────────────────────────────────────
 function buildRadarChart() {
   if (charts.radar) { charts.radar.destroy(); delete charts.radar; }
-  const radarRaces = getActiveRaces().filter(r => r.radarStrength);
+  const activeRaces = getActiveRaces();
   const canvas = document.getElementById('radarChart');
 
-  if (!radarRaces.length) {
+  if (!activeRaces.length) {
     canvas.style.display = 'none';
     const existing = canvas.parentElement.querySelector('.radar-placeholder');
     if (!existing) {
       const msg = document.createElement('p');
       msg.className = 'radar-placeholder';
       msg.style.cssText = 'color:var(--muted);text-align:center;padding:2rem 0';
-      msg.textContent = 'No radar data available for the selected category.';
+      msg.textContent = 'No races selected. Add an athlete to see performance radar.';
       canvas.parentElement.appendChild(msg);
     }
     return;
   }
+
+  // If some races are missing radarStrength (old data), estimate it relative to active selection
+  // so the user actually sees a chart immediately.
+  const processedRaces = activeRaces.map(r => {
+    if (r.radarStrength) return r;
+    
+    // Fallback: Estimate strength purely relative to currently visible races
+    // This allows old data to have a radar chart until the user re-syncs.
+    const est = RADAR_LABELS.map((lbl, i) => {
+      if (lbl === 'Running') {
+        const avg = activeRaces.reduce((sum, rx) => sum + rx.runsSecs, 0) / activeRaces.length;
+        return Math.min(100, Math.max(0, 100 - ((r.runsSecs / avg - 1) * 200 + 50)));
+      }
+      // Station estimation based on workout time vs others
+      const stIdx = i - 1; // skip running
+      if (stIdx < 0 || !r.workouts[stIdx]) return 70;
+      const avgSt = activeRaces.reduce((sum, rx) => sum + (rx.workouts[stIdx]||0), 0) / activeRaces.length;
+      return Math.min(100, Math.max(0, 100 - ((r.workouts[stIdx] / avgSt - 1) * 200 + 50)));
+    });
+    return { ...r, radarStrength: est };
+  });
 
   canvas.style.display = '';
   const ph = canvas.parentElement.querySelector('.radar-placeholder');
   if (ph) ph.remove();
 
   try {
+    const colors = getChartColors();
     charts.radar = new Chart(canvas, {
     type: 'radar',
     data: {
       labels: RADAR_LABELS,
-      datasets: radarRaces.map(r => ({
+      datasets: processedRaces.map(r => ({
         label: r.id,
         data: r.radarStrength,
         hidden: hiddenRaces.has(r.id),
         borderColor: r.color,
         backgroundColor: rgba(r.color, 0.12),
         pointBackgroundColor: r.color,
-        pointBorderColor: '#090d17',
+        pointBorderColor: colors.pointBorder,
         pointBorderWidth: 2,
         pointRadius: 5,
         pointHoverRadius: 7,
@@ -78,10 +121,10 @@ function buildRadarChart() {
       scales: {
         r: {
           min: 0, max: 100,
-          ticks: { stepSize: 20, color: '#5d7491', backdropColor: 'transparent', font: { size: 10 } },
-          grid:        { color: 'rgba(30,45,68,0.9)' },
-          angleLines:  { color: 'rgba(30,45,68,0.9)' },
-          pointLabels: { color: '#dce6f5', font: { size: 12, weight: '600' } }
+          ticks: { stepSize: 20, color: colors.muted, backdropColor: 'transparent', font: { size: 10 } },
+          grid:        { color: colors.grid },
+          angleLines:  { color: colors.grid },
+          pointLabels: { color: colors.text, font: { size: 12, weight: '600' } }
         }
       }
     }
@@ -95,7 +138,7 @@ function buildRadarLegend() {
   const el = document.getElementById('radarLegend');
   if (!el) return;
   el.innerHTML = '';
-  const activeRaces = getActiveRaces().filter(r => r.radarStrength);
+  const activeRaces = getActiveRaces();
   activeRaces.forEach(r => {
     const cls = hiddenRaces.has(r.id) ? ' dimmed' : '';
     el.insertAdjacentHTML('beforeend',
@@ -107,6 +150,7 @@ function buildRadarLegend() {
 function buildRunsChart() {
   if (charts.runs) { charts.runs.destroy(); delete charts.runs; }
   const activeRaces = getActiveRaces();
+  const colors = getChartColors();
   try {
     charts.runs = new Chart(document.getElementById('runsChart'), {
     type: 'line',
@@ -119,7 +163,7 @@ function buildRunsChart() {
         borderColor: r.color,
         backgroundColor: rgba(r.color, 0.08),
         pointBackgroundColor: r.color,
-        pointBorderColor: '#090d17',
+        pointBorderColor: colors.pointBorder,
         pointBorderWidth: 2,
         pointRadius: 5,
         pointHoverRadius: 7,
@@ -145,7 +189,7 @@ function buildRunsChart() {
           padding: { top: 2, bottom: 2, left: 5, right: 5 }
         }
       },
-      scales: { y: { ...yScale, suggestedMin: 180 }, x: xScale }
+      scales: { y: { ...yScale(), suggestedMin: 180 }, x: xScale() }
     }
   });
   } catch (err) {
@@ -179,6 +223,7 @@ function buildWorkoutCharts() {
   ).join('');
 
   const activeRaces = getActiveRaces();
+  const colors = getChartColors();
   WORKOUT_LABELS.forEach((st, i) => {
     try {
       charts[`w${i}`] = new Chart(document.getElementById(`w${i}`), {
@@ -203,15 +248,15 @@ function buildWorkoutCharts() {
           legend: { display: false },
           tooltip: { callbacks: { label: c => ` ${fmt(c.raw)}` } },
           datalabels: {
-            color: c => hiddenRaces.has(activeRaces[c.dataIndex].id) ? 'transparent' : '#dce6f5',
+            color: c => hiddenRaces.has(activeRaces[c.dataIndex].id) ? 'transparent' : colors.text,
             font: { size: 11, weight: '700' },
             formatter: v => fmt(v),
             anchor: 'end', align: 'top', offset: 3
           }
         },
         scales: {
-          y: { ...yScale, ticks: { ...yScale.ticks, maxTicksLimit: 4 } },
-          x: xScale
+          y: { ...yScale(), ticks: { ...yScale().ticks, maxTicksLimit: 4 } },
+          x: xScale()
         }
       }
     });
@@ -228,6 +273,7 @@ function buildRoxzoneCharts() {
     if (charts[`rz${i}`]) { charts[`rz${i}`].destroy(); delete charts[`rz${i}`]; }
   });
   const activeRaces = getActiveRaces();
+  const colors = getChartColors();
 
   charts.rxTotal = new Chart(document.getElementById('rxTotalChart'), {
     type: 'bar',
@@ -251,15 +297,15 @@ function buildRoxzoneCharts() {
       plugins: {
         legend: {
           display: true, position: 'top', align: 'end',
-          labels: { color: '#dce6f5', usePointStyle: true, pointStyle: 'circle', padding: 20 }
+          labels: { color: colors.text, usePointStyle: true, pointStyle: 'circle', padding: 20 }
         },
         tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${fmt(c.raw)}` } },
         datalabels: {
-          color: '#dce6f5', font: { size: 10, weight: '700' },
+          color: colors.text, font: { size: 10, weight: '700' },
           formatter: v => fmt(v), anchor: 'end', align: 'top', offset: 3
         }
       },
-      scales: { y: { ...yScale, suggestedMin: 0 }, x: xScale }
+      scales: { y: { ...yScale(), suggestedMin: 0 }, x: xScale() }
     }
   });
 
@@ -308,7 +354,7 @@ function buildRoxzoneCharts() {
             }
           },
           datalabels: {
-            color: c => hiddenRaces.has(activeRaces[c.dataIndex].id) ? 'transparent' : '#dce6f5',
+            color: c => hiddenRaces.has(activeRaces[c.dataIndex].id) ? 'transparent' : colors.text,
             font: { size: 10, weight: '700' },
             formatter: (v, ctx) => {
               if (ctx.datasetIndex === 1) {
@@ -321,60 +367,86 @@ function buildRoxzoneCharts() {
           }
         },
         scales: {
-          y: { ...yScale, stacked: true, ticks: { ...yScale.ticks, maxTicksLimit: 4 } },
-          x: { ...xScale, stacked: true }
+          y: { ...yScale(), stacked: true, ticks: { ...yScale().ticks, maxTicksLimit: 4 } },
+          x: { ...xScale(), stacked: true }
         }
       }
     });
   });
 }
 
-// ─── CATEGORY TOTALS ─────────────────────────────────────────────────────────
-function buildTotalsChart() {
-  if (charts.totals) { charts.totals.destroy(); delete charts.totals; }
+// ─── RECOVERY CHART (NEW) ───────────────────────────────────────────────────
+function buildRecoveryChart() {
+  if (charts.recovery) { charts.recovery.destroy(); delete charts.recovery; }
   const activeRaces = getActiveRaces();
-  charts.totals = new Chart(document.getElementById('totalsChart'), {
+  const canvas = document.getElementById('recoveryChart');
+  if (!canvas) return;
+
+  if (!activeRaces.length) {
+    canvas.style.display = 'none';
+    return;
+  }
+  canvas.style.display = '';
+  const colors = getChartColors();
+
+  charts.recovery = new Chart(canvas, {
     type: 'bar',
     data: {
-      labels: ['Total Time', 'Running', 'Workouts', 'Roxzone'],
+      labels: RECOVERY_STATIONS,
       datasets: activeRaces.map(r => ({
         label: r.id,
-        data: [r.totalSecs, r.runsSecs, r.workoutsSecs, r.roxzoneSecs],
+        data: calculateRecoveryDeltas(r),
         hidden: hiddenRaces.has(r.id),
-        backgroundColor: rgba(r.color, 0.65),
+        backgroundColor: rgba(r.color, 0.75),
         borderColor: r.color,
-        borderWidth: 1.5,
-        borderRadius: 6,
-        hoverBackgroundColor: rgba(r.color, 0.9)
+        borderWidth: 1,
+        borderRadius: 4
       }))
     },
     options: {
       responsive: true,
-      aspectRatio: 4,
-      layout: { padding: { top: 32 } },
       plugins: {
-        legend: {
-          display: true, position: 'top', align: 'end',
-          labels: { color: '#dce6f5', usePointStyle: true, pointStyle: 'circle', padding: 20 }
-        },
-        tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${fmt(c.raw)}` } },
-        datalabels: {
-          color: '#dce6f5', font: { size: 10, weight: '600' },
-          formatter: v => fmt(v), anchor: 'end', align: 'top', offset: 3
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: c => ` ${c.dataset.label}: ${c.raw > 0 ? '+' : ''}${c.raw}s vs prev run`
+          }
         }
       },
-      scales: { y: yScale, x: xScale }
+      scales: {
+        y: {
+          ...yScale(),
+          title: { display: true, text: 'Seconds Delta (Run N+1 vs Run N)', color: colors.muted },
+          ticks: { callback: v => (v > 0 ? '+' : '') + v + 's' }
+        },
+        x: xScale()
+      }
     }
+  });
+}
+
+function buildRecoveryLegend() {
+  const el = document.getElementById('recoveryLegend');
+  if (!el) return;
+  el.innerHTML = '';
+  const activeRaces = getActiveRaces();
+  activeRaces.forEach(r => {
+    const cls = hiddenRaces.has(r.id) ? ' dimmed' : '';
+    el.insertAdjacentHTML('beforeend',
+      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.label}</div>`);
   });
 }
 
 // ─── REBUILD ALL ─────────────────────────────────────────────────────────────
 function rebuildAllCharts() {
+  updateChartDefaults();
   buildRadarChart();
   buildRadarLegend();
   buildRunsChart();
   buildRunsLegend();
   buildWorkoutCharts();
   buildRoxzoneCharts();
-  buildTotalsChart();
+  buildRecoveryChart();
+  buildRecoveryLegend();
+  if (window.updateSimulatorResults) updateSimulatorResults(); // Sync simulator
 }

@@ -130,8 +130,27 @@ function parseResultMeta(html, athleteSlug) {
   // age group from label or DOUBLES division
   const agGroup = (ag.match(/AG([\w-]+)/) || ['','30-34'])[1];
 
+  // radar strength — look for station ranks
+  let radarStrength = null;
+  const radarMatches = [...html.matchAll(/#(\d+)\s*of\s*(\d+)\s*([\w\s.-]+)/g)];
+  if (radarMatches.length >= 8) {
+    // try to map found ranks to standard labels
+    const foundRanks = {};
+    radarMatches.forEach(m => {
+      const rank = parseInt(m[1]), total = parseInt(m[2]), st = m[3].trim();
+      const score = 100 - (rank / total * 100);
+      foundRanks[st] = score;
+    });
+    radarStrength = RADAR_LABELS.map(lbl => {
+      // rough mapping to hyresult station names
+      if (lbl === 'Running') return foundRanks['Running'] || foundRanks['Total Running'] || 80;
+      const key = Object.keys(foundRanks).find(k => k.toLowerCase().includes(lbl.toLowerCase().slice(0, 4)));
+      return foundRanks[key] || 50;
+    });
+  }
+
   return { athlete, partner, partnerSlug, total, totalSecs, rank, ag, label,
-           category, division, ageGroup: agGroup };
+           category, division, ageGroup: agGroup, radarStrength };
 }
 
 // ─── PARSE SPLITS TABLE ───────────────────────────────────────────────────────
@@ -377,7 +396,7 @@ async function importRaceById(resultId, athleteSlug, labelHint) {
     workouts:     splits.workouts,
     rxEntry:      splits.rxEntry,
     rxExit:       splits.rxExit,
-    radarStrength: null
+    radarStrength: meta.radarStrength
   };
   const added = store.add(race);
   if (added) store.mergeIntoRaces();
@@ -443,7 +462,7 @@ async function syncAthletes(onProgress, onComplete) {
         workouts:     splits.workouts,
         rxEntry:      splits.rxEntry,
         rxExit:       splits.rxExit,
-        radarStrength: null
+        radarStrength: meta.radarStrength
       };
 
       const added = store.add(race);

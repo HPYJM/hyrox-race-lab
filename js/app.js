@@ -1,3 +1,33 @@
+// ─── THEME SWITCHING ───────────────────────────────────────────────────────────
+function initTheme() {
+  const savedTheme = localStorage.getItem('hyrox_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeButton(savedTheme);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('hyrox_theme', next);
+  updateThemeButton(next);
+  rebuildAllCharts();
+}
+
+function updateThemeButton(theme) {
+  const btn = document.getElementById('themeToggle');
+  if (btn) {
+    btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+  }
+}
+
+function initThemeToggle() {
+  const btn = document.getElementById('themeToggle');
+  if (btn) {
+    btn.addEventListener('click', toggleTheme);
+  }
+}
+
 // ─── URL HASH STATE ─────────────────────────────────────────────────────────────
 
 // Parses the raw hyresult race text (e.g. "1HYROX Frankfurt 2025 PRO MEN 16-24")
@@ -88,13 +118,21 @@ function buildHeader() {
         <span class="badge">${r.id}</span>
         <div class="athlete">${athleteLine}</div>
         <div class="event">${r.label}</div>
-        <div class="total">${r.total}</div>
-        <div class="rank">${r.rank} · ${r.ag}</div>
+        ${r.total ? `<div class="total">${r.total}</div>` : ''}
+        ${(r.rank || r.ag) ? `<div class="rank">${[r.rank, r.ag].filter(Boolean).join(' · ')}</div>` : ''}
         <div class="mini-grid">
           <div class="mini-stat"><div class="lbl">Runs</div><div class="val">${fmt(r.runsSecs)}</div></div>
           <div class="mini-stat"><div class="lbl">Workouts</div><div class="val">${fmt(r.workoutsSecs)}</div></div>
           <div class="mini-stat"><div class="lbl">Roxzone</div><div class="val">${fmt(r.roxzoneSecs)}</div></div>
-          <div class="mini-stat"><div class="lbl">A/P Ratio</div><div class="val">${(r.runsSecs / r.workoutsSecs).toFixed(2)}</div></div>
+          <div class="mini-stat" title="Ratio of Running to Workout time. >1 = Strength-dominant, <1 = Engine-dominant">
+            <div class="lbl">A/P Ratio</div>
+            <div class="val">
+              ${(r.runsSecs / r.workoutsSecs).toFixed(2)}
+              <span style="font-size:0.6rem;opacity:0.7;display:block;margin-top:2px">
+                ${(r.runsSecs / r.workoutsSecs) > 1 ? 'POWER' : 'ENGINE'}
+              </span>
+            </div>
+          </div>
         </div>
         <div class="toggle-hint">click to toggle</div>
       </div>`);
@@ -633,7 +671,11 @@ function initExport() {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-function init() {  restoreFromHash();  buildHeader();
+function init() {
+  initTheme();
+  initThemeToggle();
+  restoreFromHash();
+  buildHeader();
   rebuildAllCharts();
   initTableRows();
   initCategoryToggle();
@@ -645,6 +687,7 @@ function init() {  restoreFromHash();  buildHeader();
   initExport();
   initBackToTop();
   initShareButton();
+  if (window.initSimulator) initSimulator();
   // modal wiring
   const modalClose = document.getElementById('modalClose');
   if (modalClose) modalClose.addEventListener('click', hideModal);
