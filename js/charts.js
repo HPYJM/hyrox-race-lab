@@ -211,58 +211,72 @@ function buildRunsLegend() {
   });
 }
 
-// ─── WORKOUT MINI CHARTS ─────────────────────────────────────────────────────
-function buildWorkoutCharts() {
-  // destroy existing instances first
-  WORKOUT_LABELS.forEach((_, i) => {
-    if (charts[`w${i}`]) { charts[`w${i}`].destroy(); delete charts[`w${i}`]; }
-  });
-  const wgridEl = document.getElementById('wgrid');
-  wgridEl.innerHTML = WORKOUT_LABELS.map((st, i) =>
-    `<div class="ccard"><div class="ctitle">${st}</div><canvas id="w${i}"></canvas></div>`
-  ).join('');
+// ─── WORKOUT CHART ─────────────────────────────────────────────────────────────
+let workoutsChartType = 'line'; // 'line' or 'bar'
 
+function buildWorkoutCharts() {
+  if (charts.workouts) { charts.workouts.destroy(); delete charts.workouts; }
   const activeRaces = getActiveRaces();
   const colors = getChartColors();
-  WORKOUT_LABELS.forEach((st, i) => {
-    try {
-      charts[`w${i}`] = new Chart(document.getElementById(`w${i}`), {
-      type: 'bar',
-      data: {
-        labels: activeRaces.map(r => r.id),
-        datasets: [{
-          label: st,
-          data: activeRaces.map(r => r.workouts[i]),
-          backgroundColor: activeRaces.map(r => hiddenRaces.has(r.id) ? rgba(r.color, 0.1) : rgba(r.color, 0.65)),
-          borderColor:     activeRaces.map(r => hiddenRaces.has(r.id) ? rgba(r.color, 0.2) : r.color),
-          borderWidth: 1.5,
-          borderRadius: 6,
-          hoverBackgroundColor: activeRaces.map(r => rgba(r.color, 0.9))
-        }]
+  try {
+    charts.workouts = new Chart(document.getElementById('workoutsChart'), {
+    type: workoutsChartType,
+    data: {
+      labels: ['SkiErg','Sled Push','Sled Pull','Burpee BJ','Row','Farmers C.','S. Lunges','Wall Balls'],
+      datasets: activeRaces.map(r => ({
+        label: r.id,
+        data: r.workouts,
+        hidden: hiddenRaces.has(r.id),
+        borderColor: r.color,
+        backgroundColor: rgba(r.color, 0.08),
+        pointBackgroundColor: r.color,
+        pointBorderColor: colors.pointBorder,
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        tension: 0.35,
+        fill: true,
+        borderWidth: 2.5
+      }))
+    },
+    options: {
+      responsive: true,
+      aspectRatio: 3.5,
+      layout: { padding: { top: 28 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${fmt(c.raw)}` } },
+        datalabels: {
+          color: c => c.dataset.borderColor,
+          font: { size: 10, weight: '700' },
+          formatter: v => fmt(v),
+          anchor: 'end', align: 'top', offset: 4,
+          borderRadius: 3,
+          display: workoutsChartType === 'line'
+        }
       },
-      options: {
-        responsive: true,
-        aspectRatio: 1.6,
-        layout: { padding: { top: 30 } },
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: c => ` ${fmt(c.raw)}` } },
-          datalabels: {
-            color: c => hiddenRaces.has(activeRaces[c.dataIndex].id) ? 'transparent' : colors.text,
-            font: { size: 11, weight: '700' },
-            formatter: v => fmt(v),
-            anchor: 'end', align: 'top', offset: 3
-          }
-        },
-        scales: {
-          y: { ...yScale(), ticks: { ...yScale().ticks, maxTicksLimit: 4 } },
-          x: xScale()
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: fmt }
         }
       }
-    });
-    } catch (err) {
-      console.error(`Workout chart w${i} failed to render:`, err);
     }
+    });
+  } catch (e) {
+    console.error('Workouts chart error:', e);
+  }
+  buildWorkoutsLegend();
+}
+
+function buildWorkoutsLegend() {
+  const el = document.getElementById('workoutsLegend');
+  if (!el) return;
+  el.innerHTML = '';
+  getActiveRaces().forEach(r => {
+    const cls = hiddenRaces.has(r.id) ? ' dimmed' : '';
+    el.insertAdjacentHTML('beforeend',
+      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.label}</div>`);
   });
 }
 
@@ -445,6 +459,7 @@ function rebuildAllCharts() {
   buildRunsChart();
   buildRunsLegend();
   buildWorkoutCharts();
+  buildWorkoutsLegend();
   buildRoxzoneCharts();
   buildRecoveryChart();
   buildRecoveryLegend();

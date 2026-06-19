@@ -898,6 +898,31 @@ main { max-width: 1440px; margin: 0 auto; padding: 32px 36px; }
 .section-toggle:hover { color: var(--text); border-color: var(--text); }
 .section-toggle.collapsed { transform: rotate(-90deg); }
 
+/* chart view controls */
+.chart-controls {
+  display: flex;
+  gap: 4px;
+}
+.chart-view-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 7px;
+  font-size: .8rem;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color .15s, border-color .15s, background .15s;
+}
+.chart-view-btn:hover {
+  background: var(--hover-bg-light);
+  color: var(--text);
+}
+.chart-view-btn.active {
+  background: var(--c);
+  color: #fff;
+  border-color: var(--c);
+}
+
 .section-body {
   overflow: hidden;
   transition: opacity .2s;

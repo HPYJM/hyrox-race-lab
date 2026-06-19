@@ -153,6 +153,10 @@
     <div class="section-head">
       <h2>🏃&nbsp; Running Splits — all 8 runs</h2>
       <div class="rule"></div>
+      <div class="chart-controls">
+        <button class="chart-view-btn active" data-chart="runs" data-type="line" title="Line view">📈</button>
+        <button class="chart-view-btn" data-chart="runs" data-type="bar" title="Bar view">📊</button>
+      </div>
       <button class="section-toggle" data-target="runsBody" title="Hide/show">▾</button>
     </div>
     <div class="section-body" id="runsBody">
@@ -169,10 +173,18 @@
     <div class="section-head">
       <h2>💪&nbsp; Workout Stations</h2>
       <div class="rule"></div>
+      <div class="chart-controls">
+        <button class="chart-view-btn active" data-chart="workouts" data-type="line" title="Line view">📈</button>
+        <button class="chart-view-btn" data-chart="workouts" data-type="bar" title="Bar view">📊</button>
+      </div>
       <button class="section-toggle" data-target="workoutsBody" title="Hide/show">▾</button>
     </div>
     <div class="section-body" id="workoutsBody">
-    <div class="wgrid" id="wgrid"></div>
+    <div class="ccard">
+      <div class="ctitle">Duration per workout station (lower = faster)</div>
+      <canvas id="workoutsChart"></canvas>
+      <div class="glegend" id="workoutsLegend"></div>
+    </div>
     </div>
   </div>
 

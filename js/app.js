@@ -671,6 +671,31 @@ function initExport() {
   btn.addEventListener('click', exportTableCSV);
 }
 
+// ─── CHART VIEW TOGGLES ─────────────────────────────────────────────────────
+function initChartViewToggles() {
+  document.querySelectorAll('.chart-view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const chart = btn.dataset.chart;
+      const type = btn.dataset.type;
+      
+      // Update active state
+      document.querySelectorAll(`.chart-view-btn[data-chart="${chart}"]`).forEach(b => {
+        b.classList.remove('active');
+      });
+      btn.classList.add('active');
+      
+      // Update chart type and rebuild
+      if (chart === 'runs') {
+        window.runsChartType = type;
+        if (window.buildRunsChart) window.buildRunsChart();
+      } else if (chart === 'workouts') {
+        window.workoutsChartType = type;
+        if (window.buildWorkoutCharts) window.buildWorkoutCharts();
+      }
+    });
+  });
+}
+
 // ─── NETWORK STATUS ───────────────────────────────────────────────────────────
 function initNetworkStatus() {
   const isOnline = () => navigator.onLine;
@@ -781,6 +806,7 @@ function init() {
   initOfflineDownload();
   initNetworkStatus();
   initServiceWorker();
+  initChartViewToggles();
   if (window.initSimulator) initSimulator();
   // modal wiring
   const modalClose = document.getElementById('modalClose');
