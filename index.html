@@ -7,7 +7,6 @@
   <title>HYROX Race Lab</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@master/qrcode.min.js"></script>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -69,7 +68,6 @@
       <button class="theme-toggle-btn" id="themeToggle" title="Toggle dark/light theme">🌙</button>
       <button class="athletes-panel-btn" id="athletesPanelBtn" title="Manage tracked athletes">👤 Athletes</button>
       <button class="share-btn" id="shareLinkBtn" title="Copy shareable link">🔗 Share</button>
-      <button class="qr-btn" id="qrCodeBtn" title="Show QR code">📱 QR</button>
       <button class="offline-btn" id="offlineDownloadBtn" title="Download for offline use">⬇ Offline</button>
       <div class="cat-toggle" id="catToggle">
         <button class="cat-btn active" data-cat="OPEN">Single</button>
@@ -254,20 +252,6 @@
       <div class="sk-row"><kbd>↑</kbd> <kbd>↓</kbd><span>Scroll between sections</span></div>
     </div>
     <p class="modal-tip">💡 Click any race card in the header to toggle it on/off. Table columns dim for hidden races.</p>
-  </div>
-</div>
-
-<!-- ── QR CODE MODAL ───────────────────────────────────────────────────────── -->
-<div id="qrModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="QR Code">
-  <div class="modal-box qr-modal-box">
-    <div class="modal-head">
-      <span>📱 Share via QR Code</span>
-      <button id="qrModalClose" class="modal-close" aria-label="Close">✕</button>
-    </div>
-    <div class="qr-modal-content">
-      <div id="qrCodeContainer" class="qr-code-container"></div>
-      <p class="qr-modal-text">Scan to view this race analysis on your phone</p>
-    </div>
   </div>
 </div>
 

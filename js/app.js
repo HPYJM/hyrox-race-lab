@@ -671,72 +671,6 @@ function initExport() {
   btn.addEventListener('click', exportTableCSV);
 }
 
-// ─── QR CODE MODAL ───────────────────────────────────────────────────────────
-function initQRCode() {
-  const btn = document.getElementById('qrCodeBtn');
-  const modal = document.getElementById('qrModal');
-  const closeBtn = document.getElementById('qrModalClose');
-  const container = document.getElementById('qrCodeContainer');
-  
-  if (!btn || !modal) return;
-  
-  // Check if QRCode is loaded
-  console.log('QRCode available:', typeof QRCode !== 'undefined');
-  
-  btn.addEventListener('click', () => {
-    // Generate QR code for current URL
-    syncUrlHash();
-    const url = location.href;
-    
-    // Clear previous QR code
-    container.innerHTML = '';
-    
-    // Generate new QR code using qrcodejs
-    try {
-      if (typeof QRCode !== 'undefined') {
-        new QRCode(container, {
-          text: url,
-          width: 200,
-          height: 200,
-          colorDark: '#000000',
-          colorLight: '#ffffff',
-          correctLevel: QRCode.CorrectLevel.H
-        });
-      } else {
-        console.error('QRCode is not defined');
-        container.innerHTML = '<p style="color:red">QR code library not loaded. Please refresh the page.</p>';
-      }
-    } catch (e) {
-      console.error('QR code generation error:', e);
-      container.innerHTML = '<p style="color:red">Failed to generate QR code: ' + e.message + '</p>';
-    }
-    
-    // Show modal
-    modal.classList.remove('hidden');
-  });
-  
-  // Close button
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-      modal.classList.add('hidden');
-    });
-  }
-  
-  // Close on backdrop click
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.classList.add('hidden');
-    }
-  });
-  
-  // Close on Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-      modal.classList.add('hidden');
-    }
-  });
-}
-
 // ─── NETWORK STATUS ───────────────────────────────────────────────────────────
 function initNetworkStatus() {
   const isOnline = () => navigator.onLine;
@@ -844,7 +778,6 @@ function init() {
   initExport();
   initBackToTop();
   initShareButton();
-  initQRCode();
   initOfflineDownload();
   initNetworkStatus();
   initServiceWorker();
