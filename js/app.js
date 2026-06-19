@@ -680,6 +680,9 @@ function initQRCode() {
   
   if (!btn || !modal) return;
   
+  // Check if QRCode is loaded
+  console.log('QRCode available:', typeof QRCode !== 'undefined');
+  
   btn.addEventListener('click', () => {
     // Generate QR code for current URL
     syncUrlHash();
@@ -705,7 +708,7 @@ function initQRCode() {
       }
     } catch (e) {
       console.error('QR code generation error:', e);
-      container.innerHTML = '<p style="color:red">Failed to generate QR code.</p>';
+      container.innerHTML = '<p style="color:red">Failed to generate QR code: ' + e.message + '</p>';
     }
     
     // Show modal
