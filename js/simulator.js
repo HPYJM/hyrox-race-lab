@@ -125,7 +125,12 @@ function buildSimChart() {
               // return SIM_TYPES[index] !== 1;
             },
             onDrag: (e, datasetIndex, index, value) => {
-              return Math.max(10, value); // floor at 10s
+              const v = Math.max(10, value);
+              const raceId = activeRaces[datasetIndex].id;
+              if (!simOverrides[raceId]) simOverrides[raceId] = {};
+              simOverrides[raceId][index] = Math.round(v);
+              refreshSimResults();
+              return v;
             },
             onDragEnd: (e, datasetIndex, index, value) => {
               const raceId = activeRaces[datasetIndex].id;
