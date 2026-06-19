@@ -80,6 +80,9 @@ function buildSimChart() {
   const gridColor  = isDark ? 'rgba(30,45,68,0.9)' : 'rgba(0,0,0,0.05)';
   const mutedColor = isDark ? '#5d7491' : '#475569';
 
+  // Anchor Y-axis to original data so scale doesn't shift when sliders move
+  const maxBase = Math.max(...activeRaces.flatMap(r => getSimBase(r)));
+
   try {
     simChartInst = new Chart(canvas, {
       type: 'line',
@@ -144,7 +147,9 @@ function buildSimChart() {
           y: {
             grid: { color: gridColor },
             border: { display: false },
-            ticks: { callback: v => fmt(v), color: mutedColor, maxTicksLimit: 5 }
+            ticks: { callback: v => fmt(v), color: mutedColor, maxTicksLimit: 5 },
+            suggestedMax: maxBase,
+            suggestedMin: 0
           },
           x: {
             grid: { display: false },
