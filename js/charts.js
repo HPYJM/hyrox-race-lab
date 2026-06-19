@@ -147,13 +147,14 @@ function buildRadarLegend() {
 }
 
 // ─── RUNS LINE CHART ─────────────────────────────────────────────────────────
+window.runsChartType = window.runsChartType || 'line';
 function buildRunsChart() {
   if (charts.runs) { charts.runs.destroy(); delete charts.runs; }
   const activeRaces = getActiveRaces();
   const colors = getChartColors();
   try {
     charts.runs = new Chart(document.getElementById('runsChart'), {
-    type: runsChartType,
+    type: window.runsChartType,
     data: {
       labels: ['Run 1','Run 2','Run 3','Run 4','Run 5','Run 6','Run 7','Run 8'],
       datasets: activeRaces.map(r => ({
@@ -212,15 +213,14 @@ function buildRunsLegend() {
 }
 
 // ─── WORKOUT CHART ─────────────────────────────────────────────────────────────
-let workoutsChartType = 'line'; // 'line' or 'bar'
-
+window.workoutsChartType = window.workoutsChartType || 'bar';
 function buildWorkoutCharts() {
   if (charts.workouts) { charts.workouts.destroy(); delete charts.workouts; }
   const activeRaces = getActiveRaces();
   const colors = getChartColors();
   try {
     charts.workouts = new Chart(document.getElementById('workoutsChart'), {
-    type: workoutsChartType,
+    type: window.workoutsChartType,
     data: {
       labels: ['SkiErg','Sled Push','Sled Pull','Burpee BJ','Row','Farmers C.','S. Lunges','Wall Balls'],
       datasets: activeRaces.map(r => ({
@@ -228,7 +228,7 @@ function buildWorkoutCharts() {
         data: r.workouts,
         hidden: hiddenRaces.has(r.id),
         borderColor: r.color,
-        backgroundColor: rgba(r.color, 0.08),
+        backgroundColor: window.workoutsChartType === 'bar' ? rgba(r.color, 0.65) : rgba(r.color, 0.08),
         pointBackgroundColor: r.color,
         pointBorderColor: colors.pointBorder,
         pointBorderWidth: 2,
@@ -252,7 +252,7 @@ function buildWorkoutCharts() {
           formatter: v => fmt(v),
           anchor: 'end', align: 'top', offset: 4,
           borderRadius: 3,
-          display: workoutsChartType === 'line'
+          display: window.workoutsChartType === 'line'
         }
       },
       scales: {
