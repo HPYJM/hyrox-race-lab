@@ -670,6 +670,63 @@ function initExport() {
   btn.addEventListener('click', exportTableCSV);
 }
 
+// ─── QR CODE MODAL ───────────────────────────────────────────────────────────
+function initQRCode() {
+  const btn = document.getElementById('qrCodeBtn');
+  const modal = document.getElementById('qrModal');
+  const closeBtn = document.getElementById('qrModalClose');
+  const container = document.getElementById('qrCodeContainer');
+  
+  if (!btn || !modal) return;
+  
+  btn.addEventListener('click', () => {
+    // Generate QR code for current URL
+    syncUrlHash();
+    const url = location.href;
+    
+    // Clear previous QR code
+    container.innerHTML = '';
+    
+    // Generate new QR code
+    if (typeof QRCode !== 'undefined') {
+      QRCode.toCanvas(url, { width: 200, margin: 1 }, (error, canvas) => {
+        if (error) {
+          console.error('QR code generation failed:', error);
+          container.textContent = 'Failed to generate QR code';
+          return;
+        }
+        container.appendChild(canvas);
+      });
+    } else {
+      container.textContent = 'QR code library not loaded';
+    }
+    
+    // Show modal
+    modal.classList.remove('hidden');
+  });
+  
+  // Close button
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+  }
+  
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.add('hidden');
+    }
+  });
+  
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+      modal.classList.add('hidden');
+    }
+  });
+}
+
 // ─── NETWORK STATUS ───────────────────────────────────────────────────────────
 function initNetworkStatus() {
   const isOnline = () => navigator.onLine;
@@ -777,6 +834,7 @@ function init() {
   initExport();
   initBackToTop();
   initShareButton();
+  initQRCode();
   initOfflineDownload();
   initNetworkStatus();
   initServiceWorker();
