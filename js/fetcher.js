@@ -142,6 +142,8 @@ function parseResultMeta(html, athleteSlug) {
 
   // radar strength — look for station ranks
   let radarStrength = null;
+  let workoutPct = null;
+  let runningPct = null;
   const radarMatches = [...html.matchAll(/#(\d+)\s*of\s*(\d+)\s*([\w\s.-]+)/g)];
   if (radarMatches.length >= 8) {
     // try to map found ranks to standard labels
@@ -157,10 +159,20 @@ function parseResultMeta(html, athleteSlug) {
       const key = Object.keys(foundRanks).find(k => k.toLowerCase().includes(lbl.toLowerCase().slice(0, 4)));
       return foundRanks[key] || 50;
     });
+    
+    // Calculate running percentile (index 0)
+    runningPct = radarStrength[0] ? `Top ${(100 - radarStrength[0]).toFixed(1)}%` : null;
+    
+    // Calculate workout percentile (average of stations 1-8)
+    const workoutStrengths = radarStrength.slice(1);
+    if (workoutStrengths.length > 0) {
+      const avgWorkoutStrength = workoutStrengths.reduce((a, b) => a + b, 0) / workoutStrengths.length;
+      workoutPct = `Top ${(100 - avgWorkoutStrength).toFixed(1)}%`;
+    }
   }
 
   return { athlete, partner, partnerSlug, total, totalSecs, rank, pct, ag, label,
-           category, division, ageGroup: agGroup, radarStrength };
+           category, division, ageGroup: agGroup, radarStrength, workoutPct, runningPct };
 }
 
 // ─── PARSE SPLITS TABLE ───────────────────────────────────────────────────────
@@ -395,6 +407,8 @@ async function importRaceById(resultId, athleteSlug, labelHint) {
     ageGroup:     meta.ageGroup,
     rank:         meta.rank,
     pct:          meta.pct,
+    workoutPct:   meta.workoutPct,
+    runningPct:   meta.runningPct,
     color:        null,
     total:        meta.total,
     totalSecs:    splits.totalSecs || meta.totalSecs,
@@ -464,6 +478,8 @@ async function syncAthletes(onProgress, onComplete) {
         ageGroup:    meta.ageGroup,
         rank:        meta.rank,
         pct:         meta.pct,
+        workoutPct:  meta.workoutPct,
+        runningPct:  meta.runningPct,
         color:       null, // assigned by store.mergeIntoRaces
         total:       meta.total,
         totalSecs:   splits.totalSecs || meta.totalSecs,

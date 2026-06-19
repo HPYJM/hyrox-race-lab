@@ -141,9 +141,8 @@ function buildRadarLegend() {
   const activeRaces = getActiveRaces();
   activeRaces.forEach(r => {
     const cls = hiddenRaces.has(r.id) ? ' dimmed' : '';
-    const pctStr = r.pct ? `<span style="color:var(--muted);margin-left:8px">(${r.pct})</span>` : '';
     el.insertAdjacentHTML('beforeend',
-      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.label}${pctStr}</div>`);
+      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.label}</div>`);
   });
 }
 
@@ -207,9 +206,8 @@ function buildRunsLegend() {
     // Fatigue Index: (Run 8 - Run 1) / Run 1
     const decay = ((r.runs[7] - r.runs[0]) / r.runs[0]) * 100;
     const decayStr = decay > 0 ? `+${decay.toFixed(1)}%` : `${decay.toFixed(1)}%`;
-    const pctStr = r.pct ? `<span style="color:var(--muted);margin-left:8px">(${r.pct})</span>` : '';
     el.insertAdjacentHTML('beforeend',
-      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.athlete} <span style="color:var(--muted);margin-left:8px">(${decayStr} decay)</span>${pctStr}</div>`);
+      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.athlete} <span style="color:var(--muted);margin-left:8px">(${decayStr} decay)</span></div>`);
   });
 }
 
@@ -434,9 +432,8 @@ function buildRecoveryLegend() {
   const activeRaces = getActiveRaces();
   activeRaces.forEach(r => {
     const cls = hiddenRaces.has(r.id) ? ' dimmed' : '';
-    const pctStr = r.pct ? `<span style="color:var(--muted);margin-left:8px">(${r.pct})</span>` : '';
     el.insertAdjacentHTML('beforeend',
-      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.label}${pctStr}</div>`);
+      `<div class="li${cls}"><div class="dot" style="background:${r.color}"></div>${r.id} — ${r.label}</div>`);
   });
 }
 
