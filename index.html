@@ -154,8 +154,9 @@
       <h2>🏃&nbsp; Running Splits — all 8 runs</h2>
       <div class="rule"></div>
       <div class="chart-controls">
-        <button class="chart-view-btn active" data-chart="runs" data-type="line" title="Line view">📈</button>
-        <button class="chart-view-btn" data-chart="runs" data-type="bar" title="Bar view">📊</button>
+        <span class="chart-view-label">Line</span>
+        <input type="range" class="chart-view-slider" data-chart="runs" min="0" max="1" step="1" value="0">
+        <span class="chart-view-label">Bar</span>
       </div>
       <button class="section-toggle" data-target="runsBody" title="Hide/show">▾</button>
     </div>
@@ -174,8 +175,9 @@
       <h2>💪&nbsp; Workout Stations</h2>
       <div class="rule"></div>
       <div class="chart-controls">
-        <button class="chart-view-btn active" data-chart="workouts" data-type="line" title="Line view">📈</button>
-        <button class="chart-view-btn" data-chart="workouts" data-type="bar" title="Bar view">📊</button>
+        <span class="chart-view-label">Line</span>
+        <input type="range" class="chart-view-slider" data-chart="workouts" min="0" max="1" step="1" value="0">
+        <span class="chart-view-label">Bar</span>
       </div>
       <button class="section-toggle" data-target="workoutsBody" title="Hide/show">▾</button>
     </div>
