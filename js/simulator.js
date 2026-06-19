@@ -71,26 +71,41 @@ function buildSimChart() {
 
   try {
     simChartInst = new Chart(canvas, {
-      type: 'bar',
+      type: 'line',
       data: {
         labels: SIM_LABELS,
         datasets: activeRaces.map(r => ({
           label: r.id,
           data: getSimSegments(r),
-          backgroundColor: segBgColors(r),
-          borderColor: SIM_TYPES.map(t => t === 1 ? rgba(r.color, 0.3) : r.color),
-          borderWidth: 1.5,
-          borderRadius: 4
+          borderColor: r.color,
+          backgroundColor: rgba(r.color, 0.08),
+          pointBackgroundColor: r.color,
+          pointBorderColor: isDark ? '#090d17' : '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          tension: 0.35,
+          fill: true,
+          borderWidth: 2.5
         }))
       },
       options: {
         responsive: true,
         aspectRatio: 4,
-        layout: { padding: { top: 4 } },
+        layout: { padding: { top: 28 } },
         plugins: {
           legend: { display: false },
           tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${fmt(c.raw)}` } },
-          datalabels: { display: false }
+          datalabels: {
+            color: c => c.dataset.borderColor,
+            font: { size: 10, weight: '700' },
+            formatter: v => fmt(v),
+            anchor: 'end', align: 'top', offset: 4,
+            borderRadius: 3,
+            backgroundColor: c => rgba(c.dataset.borderColor, 0.12),
+            padding: { top: 2, bottom: 2, left: 5, right: 5 },
+            display: ctx => SIM_TYPES[ctx.dataIndex] !== 1
+          }
         },
         scales: {
           y: {
