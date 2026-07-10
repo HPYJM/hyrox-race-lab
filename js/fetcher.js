@@ -26,6 +26,16 @@ const STATION_ORDER_FULL = [
   'Row', 'Farmers Carry', 'Sandbag Lunges', 'Wall Balls'
 ];
 
+// hyresult.com now uses abbreviated names — map them to canonical
+const STATION_ALIASES = {
+  'Burpee BJ':      'Burpee Broad Jump',
+  'F. Carry':       'Farmers Carry',
+  'S. Lunges':      'Sandbag Lunges',
+};
+function resolveStation(name) {
+  return STATION_ALIASES[name] || name;
+}
+
 // ─── LOW-LEVEL FETCH ─────────────────────────────────────────────────────────
 // Tries proxies in order; first one to return valid HTML wins.
 async function proxyFetch(url, timeoutMs = 10000) {
@@ -193,11 +203,11 @@ function parseSplitsFromHtml(html) {
     if (!segment || !split) continue;
     const secs = splitToSecs(split);
 
-    if (segment === 'Roxzone In') {
+    if (segment === 'Roxzone In' || segment === 'Rox In') {
       runs.push(secs);
 
-    } else if (segment.endsWith(' In') && segment !== 'Roxzone In') {
-      const stName = segment.replace(/ In$/, '');
+    } else if (segment.endsWith(' In') && segment !== 'Roxzone In' && segment !== 'Rox In') {
+      const stName = resolveStation(segment.replace(/ In$/, ''));
       const idx = STATION_ORDER_FULL.indexOf(stName);
       if (stName === 'Wall Balls') {
         // Run 8 (final run to Wall Balls — no prior Roxzone In)
@@ -208,12 +218,12 @@ function parseSplitsFromHtml(html) {
         if (idx < 7) rxEntry[idx] = secs;
       }
 
-    } else if (segment.endsWith(' Out') && segment !== 'Roxzone Out') {
-      const stName = segment.replace(/ Out$/, '');
+    } else if (segment.endsWith(' Out') && segment !== 'Roxzone Out' && segment !== 'Rox Out') {
+      const stName = resolveStation(segment.replace(/ Out$/, ''));
       const idx = STATION_ORDER_FULL.indexOf(stName);
       if (idx !== -1) workouts[idx] = secs;
 
-    } else if (segment === 'Roxzone Out') {
+    } else if (segment === 'Roxzone Out' || segment === 'Rox Out') {
       if (stationIdx >= 0 && stationIdx < 7) rxExit[stationIdx] = secs;
 
     } else if (segment === 'Total time') {
